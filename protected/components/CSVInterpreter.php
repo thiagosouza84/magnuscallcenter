@@ -14,6 +14,11 @@ class CSVInterpreter
 
     public function __construct($filename, $delimiter = ";", $enclosure = "\"", $escape = "/")
     {
+
+        if ($_REQUEST['delimiter']) {
+            $delimiter = $_REQUEST['delimiter'];
+        }
+
         if (file_exists($filename)) {
             $handle = fopen($filename, 'r');
             if (($line1 = fgets($handle)) !== false) {
@@ -25,6 +30,10 @@ class CSVInterpreter
 
         } else {
             $this->addError('File not found');
+        }
+
+        if (!preg_match("/$delimiter/", $line1)) {
+            $this->addError(Yii::t('yii', 'ERROR: CSV delimiter'));
         }
 
         $this->filename  = $filename;
