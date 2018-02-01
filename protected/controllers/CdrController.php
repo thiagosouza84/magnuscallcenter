@@ -62,30 +62,6 @@ class CdrController extends BaseController
     public function actionDownloadRecord()
     {
 
-        $ids = json_decode($_GET['ids']);
-
-        $criteria = new CDbCriteria();
-        $criteria->addInCondition('id', $ids);
-
-        if (isset($_POST['filter']) && strlen($_POST['filter']) > 5) {
-            $filter = $_POST['filter'];
-
-            $filter = $this->createCondition(json_decode($filter));
-
-            $whereTerminatecauseid = !preg_match("/terminatecauseid/", $filter) ? ' AND terminatecauseid = 1' : false;
-            $filter                = $filter . $whereTerminatecauseid;
-
-            $this->filter = $filter = $this->extraFilter($filter);
-
-            $criteria->addCondition($this->filter);
-            if (count($this->paramsFilter)) {
-                foreach ($this->paramsFilter as $key => $value) {
-                    $criteria->params[$key] = $value;
-                }
-            }
-        }
-        $modelCdr = Cdr::model()->findAll($criteria);
-
         $folder       = $this->magnusFilesDirectory . 'monitor';
         $record_patch = $this->config['global']['record_patch'];
 
@@ -95,48 +71,103 @@ class CdrController extends BaseController
 
         array_map('unlink', glob("$folder/*"));
 
-        if (count($modelCdr)) {
-            foreach ($modelCdr as $records) {
-                $number   = $records->calledstation;
-                $day      = $records->starttime;
-                $uniqueid = $records->uniqueid;
-                $day      = explode(' ', $day);
-                $day      = explode('-', $day[0]);
+        if (isset($_GET['id'])) {
 
-                $day = $day[2] . $day[1] . $day[0];
+            $modelCdr = Cdr::model()->findByPk((int) $_GET['id']);
+            $day      = $modelCdr->starttime;
+            $uniqueid = $modelCdr->uniqueid;
+            $day      = explode(' ', $day);
+            $day      = explode('-', $day[0]);
 
-                exec('cp -rf  ' . $record_patch . '/' . $day . '/*.' . $uniqueid . '.gsm ' . $folder);
+            $day = $day[2] . $day[1] . $day[0];
+
+            exec("ls " . $record_patch . '/' . $day . '/*.' . $uniqueid . '* ', $output);
+
+            if (isset($output[0])) {
+                $file_name = explode("/", $output[0]);
+                header("Cache-Control: public");
+                header("Content-Description: File Transfer");
+                header("Content-Disposition: attachment; filename=" . end($file_name));
+                if (preg_match('/gsm/', end($file_name))) {
+                    header("Content-Type: audio/x-gsm");
+                } else {
+                    header("Content-Type: audio/mpeg");
+                }
+                header("Content-Transfer-Encoding: binary");
+                readfile($output[0]);
+            } else {
+                echo yii::t('yii', 'Audio no found');
             }
-            exec("cd $folder && tar -czf records_" . Yii::app()->session['username'] . ".tar.gz *");
-
-            $file_name = 'records_' . Yii::app()->session['username'] . '.tar.gz';
-            $path      = $folder . '/' . $file_name;
-            header('Content-type: application/tar+gzip');
-
-            echo json_encode(array(
-                $this->nameSuccess => true,
-                $this->nameMsg     => 'success',
-            ));
-
-            header('Content-Description: File Transfer');
-            header("Content-Type: application/x-tar");
-            header('Content-Disposition: attachment; filename=' . basename($file_name));
-            header("Content-Transfer-Encoding: binary");
-            header('Accept-Ranges: bytes');
-            header('Content-type: application/force-download');
-            ob_clean();
-            flush();
-            if (readfile($path)) {
-                unlink($path);
-            }
-            exec("rm -rf $folder/*");
-
-        } else {
-            echo json_encode(array(
-                $this->nameSuccess => false,
-                $this->nameMsg     => 'Audio no found',
-            ));
             exit;
+        } else {
+
+            $ids = json_decode($_GET['ids']);
+
+            $criteria = new CDbCriteria();
+            $criteria->addInCondition('id', $ids);
+
+            if (isset($_POST['filter']) && strlen($_POST['filter']) > 5) {
+                $filter = $_POST['filter'];
+
+                $filter = $this->createCondition(json_decode($filter));
+
+                $whereTerminatecauseid = !preg_match("/terminatecauseid/", $filter) ? ' AND terminatecauseid = 1' : false;
+                $filter                = $filter . $whereTerminatecauseid;
+
+                $this->filter = $filter = $this->extraFilter($filter);
+
+                $criteria->addCondition($this->filter);
+                if (count($this->paramsFilter)) {
+                    foreach ($this->paramsFilter as $key => $value) {
+                        $criteria->params[$key] = $value;
+                    }
+                }
+            }
+            $modelCdr = Cdr::model()->findAll($criteria);
+
+            if (count($modelCdr)) {
+                foreach ($modelCdr as $records) {
+                    $number   = $records->calledstation;
+                    $day      = $records->starttime;
+                    $uniqueid = $records->uniqueid;
+                    $day      = explode(' ', $day);
+                    $day      = explode('-', $day[0]);
+
+                    $day = $day[2] . $day[1] . $day[0];
+
+                    exec('cp -rf  ' . $record_patch . '/' . $day . '/*.' . $uniqueid . '.gsm ' . $folder);
+                }
+                exec("cd $folder && tar -czf records_" . Yii::app()->session['username'] . ".tar.gz *");
+
+                $file_name = 'records_' . Yii::app()->session['username'] . '.tar.gz';
+                $path      = $folder . '/' . $file_name;
+                header('Content-type: application/tar+gzip');
+
+                echo json_encode(array(
+                    $this->nameSuccess => true,
+                    $this->nameMsg     => 'success',
+                ));
+
+                header('Content-Description: File Transfer');
+                header("Content-Type: application/x-tar");
+                header('Content-Disposition: attachment; filename=' . basename($file_name));
+                header("Content-Transfer-Encoding: binary");
+                header('Accept-Ranges: bytes');
+                header('Content-type: application/force-download');
+                ob_clean();
+                flush();
+                if (readfile($path)) {
+                    unlink($path);
+                }
+                exec("rm -rf $folder/*");
+
+            } else {
+                echo json_encode(array(
+                    $this->nameSuccess => false,
+                    $this->nameMsg     => 'Audio no found',
+                ));
+                exit;
+            }
         }
     }
 
