@@ -2,19 +2,19 @@
 /**
  * =======================================
  * ###################################
- * MagnusBilling
+ * MagnusCallCenter
  *
- * @package MagnusBilling
+ * @package MagnusCallCenter
  * @author Adilson Leffa Magnus.
- * @copyright Copyright (C) 2005 - 2017 MagnusBilling. All rights reserved.
+ * @copyright Copyright (C) 2012 - 2018 MagnusCallCenter. All rights reserved.
  * ###################################
  *
  * This software is released under the terms of the GNU Lesser General Public License v2.1
  * A copy of which is available from http://www.gnu.org/copyleft/lesser.html
  *
- * Please submit bug reports, patches, etc to https://github.com/magnusbilling/mbilling/issues
+ * Please submit bug reports, patches, etc to https://github.com/magnussolution/magnuscallcenter/issues
  * =======================================
- * Magnusbilling.com <info@magnusbilling.com>
+ * MagnusCallCenter.com <info@magnussolution.com>
  * *
  * $mail = new Mail(Mail::$TYPE_PAYMENT, 100);
  * $mail->replaceInEmail(Mail::$ITEM_ID_KEY, 1);

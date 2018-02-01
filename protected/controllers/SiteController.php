@@ -2,7 +2,7 @@
 /**
  * Actions of module "Pedido".
  *
- * MagnusBilling <info@magnusbilling.com>
+ * MagnusCallCenter <info@magnussolution.com>
  * 05/06/2013
  */
 

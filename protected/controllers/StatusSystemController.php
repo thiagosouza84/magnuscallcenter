@@ -4,14 +4,14 @@
  *
  * =======================================
  * ###################################
- * MagnusBilling
+ * MagnusCallCenter
  *
- * @package MagnusBilling
+ * @package MagnusCallCenter
  * @author  Adilson Leffa Magnus.
  * @copyright   Todos os direitos reservados.
  * ###################################
  * =======================================
- * Magnusbilling.com <info@magnusbilling.com>
+ * MagnusCallCenter.com <info@magnussolution.com>
  * 19/09/2012
  */
 

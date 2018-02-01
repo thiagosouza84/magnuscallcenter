@@ -2,7 +2,7 @@
 /**
  * Default Controll.
  *
- * MagnusBilling <info@magnusbilling.com>
+ * MagnusCallCenter <info@magnussolution.com>
  * 11/05/2017
  */
 class BaseController extends CController

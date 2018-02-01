@@ -2,7 +2,7 @@
 /**
  * Actions of module "GroupUser".
  *
- * CallCenter <info@magnusbilling.com>
+ * CallCenter <info@magnussolution.com>
  * 15/04/2013
  */
 

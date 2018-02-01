@@ -3,7 +3,7 @@
  * Configuration file of application
  * Properties of class CWebApplication
  *
- * MagnusBilling <info@magnusbilling.com>
+ * MagnusCallCenter <info@magnussolution.com>
  * 15/04/2013
  */
 $configFile = '/etc/asterisk/res_config_mysql.conf';

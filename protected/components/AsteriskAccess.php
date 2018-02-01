@@ -2,7 +2,7 @@
 /**
  * Classe de com funcionalidades globais
  *
- * MagnusBilling <info@magnusbilling.com>
+ * MagnusCallCenter <info@magnussolution.com>
  * 08/06/2013
  */
 

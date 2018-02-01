@@ -2,8 +2,8 @@
 clear
 echo
 echo "----------- Send backup to another SSH Server: ----------"
-echo "-------------- www.magnusbilling.com ---------------"
-echo "------------- info@magnusbilling.com ---------------"
+echo "-------------- www.magnuscallcenter.com ---------------"
+echo "------------- info@magnussolution.com ---------------"
 echo
 sleep 1 
 
