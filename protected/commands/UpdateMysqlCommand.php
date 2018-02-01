@@ -135,6 +135,35 @@ class UpdateMysqlCommand extends ConsoleCommand
             $this->executeDB($sql);
         }
 
+        if ($version == '3.0.6') {
+
+            $sql = "
+                ALTER TABLE `pkg_phonenumber` CHANGE `endereco_complementar` `address_complement` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
+                ALTER TABLE `pkg_massive_call_phonenumber` CHANGE `endereco_complementar` `address_complement` VARCHAR(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
+                ALTER TABLE `pkg_campaign` CHANGE `allow_endereco_complementar` `allow_address_complement` INT(11) NOT NULL DEFAULT '0';
+
+                ALTER TABLE `pkg_phonenumber`
+                ADD `address_number` INT(10) NULL DEFAULT NULL AFTER `address_complement`,
+                ADD `beneficio_especie` VARCHAR(60) NULL DEFAULT NULL,
+                ADD `valor_proposta` INT(10) NULL DEFAULT NULL,
+                ADD `valor_parcela` INT(10) NULL DEFAULT NULL;
+
+                ALTER TABLE  `pkg_campaign`
+                ADD `allow_cpf` INT( 11 ) NOT NULL DEFAULT  '0' AFTER  `allow_dni`,
+                ADD `allow_address_number` INT( 11 ) NOT NULL DEFAULT  '0' AFTER  `allow_address`,
+                ADD `allow_beneficio_especie` INT( 11 ) NOT NULL DEFAULT  '0',
+                ADD `allow_valor_proposta` INT( 11 ) NOT NULL DEFAULT  '0',
+                ADD `allow_valor_parcela` INT( 11 ) NOT NULL DEFAULT  '0';
+
+
+            ";
+            $this->executeDB($sql);
+
+            $version = '3.0.7';
+            $sql     = "UPDATE pkg_configuration SET config_value = '" . $version . "' WHERE config_key = 'version' ";
+            $this->executeDB($sql);
+        }
+
     }
 
     private function executeDB($sql)

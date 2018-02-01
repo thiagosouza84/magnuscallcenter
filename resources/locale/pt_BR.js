@@ -1,4 +1,5 @@
 Locale.load({
+    'Complement': 'Complemento',
     'neighborhood': 'Bairro',
     'The columns are miscofigurated': 'Existe alguma coluna na 1º linha que não podemos entender',
     'day_start': 'Dia início',
@@ -46,7 +47,7 @@ Locale.load({
     'Mandatory': 'Obrigatorio',
     'datebackcall': 'Data do agendamento',
     'sendCall': 'Ligar',
-    'dni': 'Documento',
+    'dni': 'Documento RG',
     'Cita concreta': 'Somente para mim',
     'Sin Llamar': 'Sem chamada',
     'Tiempo no Produtivo': 'Tempo sem produção',

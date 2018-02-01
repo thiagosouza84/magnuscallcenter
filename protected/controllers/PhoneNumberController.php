@@ -11,17 +11,6 @@ class PhoneNumberController extends BaseController
     public $attributeOrder = 't.id';
     public $extraValues    = array('idPhonebook' => 'name', 'idCategory' => 'name', 'idUser' => 'name');
 
-    /*public $select = 't.id, t.id_phonebook, t.number, t.name, t.email, t.email2, t.email3, t.creationdate, t.id_category, t.status, t.info, t.city, t.address,
-    t.state, t.country, t.dni, t.mobile, t.number_home, t.number_office, t.zip_code,
-    t.company, t.birth_date, t.type_user, t.mobile_2, option_1, option_2, option_3, option_4, option_5, edad, profesion, sexo, datebackcall,
-    beneficio_number,quantidade_transacoes,inicio_beneficio,beneficio_valor,
-    banco,agencia,conta,endereco_complementar,telefone_fixo1,
-    telefone_fixo2,telefone_fixo3,telefone_celular1,telefone_celular2,telefone_celular3,
-    telefone_fixo_comercial1,telefone_fixo_comercial2,telefone_fixo_comercial3,
-    parente1,fone_parente1,parente2,fone_parente2,parente3,fone_parente3,
-    vizinho1,telefone_vizinho1,vizinho2,telefone_vizinho2,
-    vizinho3,telefone_vizinho3,t.cita_concreta';*/
-
     public $join = 'INNER JOIN pkg_phonebook ON t.id_phonebook = pkg_phonebook.id
     INNER JOIN pkg_campaign_phonebook ON pkg_campaign_phonebook.id_phonebook = pkg_phonebook.id
     INNER JOIN pkg_category ON t.id_category = pkg_category.id
