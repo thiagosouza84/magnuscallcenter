@@ -1,8 +1,11 @@
 ###########
-MagnusCallcenter 3 
+MagnusCallcenter 3
 ###########
 
-Primeiro sistema CRM para callcenter OpenSource do Brasil.
+Buscamos pessoas para colaborar com o projeto
+
+
+Primeiro sistema para callcenter OpenSource do Brasil.
 
 ## Como iniciar?
 
