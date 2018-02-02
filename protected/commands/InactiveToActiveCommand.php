@@ -34,12 +34,12 @@ class InactiveToActiveCommand extends ConsoleCommand
             foreach ($modelCampaignPhonebook as $key => $phonebook) {
                 $ids_phone_books[] = $phonebook->id_phonebook;
             }
-
+            print_r($ids_phone_books);
             $criteria = new CDbCriteria();
             $criteria->addInCondition('id_phonebook', $ids_phone_books);
-            $criteria->addCondition('status = 0 AND try < 4');
-            $modelPhoneNumber = PhoneNumber::model()->updateAll(array('status' => 1), $criteria);
+            $criteria->addCondition('(status = 0 OR id_category = 0) AND try < 4');
+
+            PhoneNumber::model()->updateAll(array('status' => 1, 'id_category' => 1), $criteria);
         }
-        exit;
     }
 }

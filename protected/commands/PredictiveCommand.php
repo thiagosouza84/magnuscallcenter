@@ -385,7 +385,12 @@ class PredictiveCommand extends ConsoleCommand
                 //desativamos o numero para nao ser usado novamente.
                 $criteria = new CDbCriteria();
                 $criteria->addInCondition('id', $ids);
-                PhoneNumber::model()->updateAll(array('id_category' => 0), $criteria);
+                PhoneNumber::model()->updateAll(
+                    array(
+                        'id_category' => 0,
+                        'try'         => new CDbExpression('try + 1'),
+                    ),
+                    $criteria);
 
                 //salvamos os dados da chamada gerada
                 $modelPredictiveGen               = new PredictiveGen();
