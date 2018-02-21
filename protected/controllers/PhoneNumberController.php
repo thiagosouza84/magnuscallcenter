@@ -164,8 +164,8 @@ class PhoneNumberController extends BaseController
 
                 $this->checkScheduledNumbers();
 
-                $filter = ' pkg_campaign_phonebook.id_campaign = ' . $id_campaign . ' AND t.status = 1 AND (t.id_category = 1 OR t.id_category = 8) ';
-                $order  = 'id_category DESC , RAND( )';
+                $filter      = ' pkg_campaign_phonebook.id_campaign = ' . $id_campaign . ' AND t.status = 1 AND (t.id_category = 1 OR t.id_category = 8) ';
+                $this->order = 'id_category DESC , RAND( )';
             }
 
             $this->filter = $filter;
