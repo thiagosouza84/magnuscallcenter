@@ -286,18 +286,38 @@ class PredictiveCommand extends ConsoleCommand
                 }
                 $ids = array();
                 foreach ($modelPhoneNumber as $phone) {
+                    MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . " \n\n\n");
 
-                    $types = array(
-                        '0' => 'number',
-                        '1' => 'number_home',
-                        '2' => 'number_office',
-                        '3' => 'mobile',
-                    );
+                    for ($n = 1; $n < 4; $n++) {
 
-                    $destination = $phone->{$types[$phone->try]};
+                        $types = array(
+                            '0' => 'number',
+                            '1' => 'number_home',
+                            '2' => 'number_office',
+                            '3' => 'mobile',
+                        );
 
-                    if ($types[$phone['try']] = !'number') {
-                        echo $phone->id . ", tentando ligar para outro numero ->  " . $types[$phone->try] . " " . $phone->{$types[$phone->try]} . " \n";
+                        $destination = $phone->{$types[$phone->try]};
+
+                        $log = $this->debug >= 1 ? MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . " ID=" . $phone->id . ' - Destination' . $destination) : null;
+
+                        if (!is_numeric($destination) || strlen($destination) < 8) {
+                            $destination = $phone->{$types[$n]};
+                            $log         = $this->debug >= 1 ? MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . " " . $destination . ' ' . $phone->id . ", tentando ligar para outro numero ->  " . $types[$n] . " " . $phone->{$types[$phone->try]}) : null;
+                            continue;
+                        } else {
+                            MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . " NUMEOR ENCONTRADO PHONE_ID" . $phone->id . ' ' . $destination . "\n\n");
+                            break;
+                        }
+                        $log           = $this->debug >= 1 ? MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . " DISABLE PHONE_ID" . $phone->id) : null;
+                        $phone->status = 0;
+                        $phone->save();
+
+                    }
+
+                    if ($types[$phone['try']] != 'number') {
+
+                        $log = $this->debug >= 1 ? MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . " " . $phone->id . ", tentando ligar para outro numero ->  " . $types[$phone->try] . " " . $phone->{$types[$phone->try]}) : null;
                     }
 
                     $destination = Portabilidade::getDestination($destination, $phone->id_phonebook);
@@ -314,7 +334,7 @@ class PredictiveCommand extends ConsoleCommand
                         if (count($modelTrunkPortabilidade)) {
                             $phone->idPhonebook->id_trunk = $modelTrunkPortabilidade->id;
                         } else {
-                            $agi->verbose('Portabilidade ativa, mas sem tronco para ' . $rn1, 3);
+                            $log = $this->debug >= 1 ? MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . 'Portabilidade ativa, mas sem tronco para ' . $rn1) : null;
                         }
                     }
 

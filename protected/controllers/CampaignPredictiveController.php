@@ -22,7 +22,7 @@ class CampaignPredictiveController extends BaseController
         $results        = array();
         foreach ($resultCampaign as $key => $campaign) {
 
-            Campaign::model()->campaignPredictive($campaign->id);
+            $result                           = Campaign::model()->campaignPredictive($campaign);
             $result[0]['asr']                 = number_format($result[0]['asr'], 2) . " %";
             $result[0]['ring_delay']          = number_format($result[0]['ring_delay'], 0);
             $result[0]['answered_call_ratio'] = number_format($result[0]['answered_call_ratio'], 0);

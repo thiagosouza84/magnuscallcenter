@@ -93,20 +93,20 @@ class Campaign extends Model
         return parent::beforeSave();
     }
 
-    public function campaignPredictive($id_campaign)
+    public function campaignPredictive($campaign)
     {
-        $id_campaign = "SELECT id_phonebook FROM pkg_campaign_phonebook WHERE id_campaign = " . $id_campaign;
+        $id_campaign = "SELECT id_phonebook FROM pkg_campaign_phonebook WHERE id_campaign = " . $campaign->id;
 
         $sql = "SELECT id,
-                '$campaign->name' name,
-                (SELECT avg(sessiontime)  FROM `pkg_cdr` WHERE `id_campaign` = $campaign->id) answered_call_ratio,
-                (SELECT count(*)  FROM `pkg_preditive_gen` WHERE `id_phonebook` IN ($id_campaign)) total_calls,
-                (SELECT count(*)  FROM `pkg_preditive_gen` WHERE `id_phonebook` IN ($id_campaign) AND ringing_time > 1) answered,
-                count(*) error,
-                (SELECT AVG( ringing_time ) FROM  `pkg_preditive_gen` WHERE `id_phonebook` IN ($id_campaign) AND ringing_time >0) ring_delay  ,
-                ((SELECT count(*)  FROM `pkg_preditive_gen` WHERE `id_phonebook` IN ($id_campaign) AND ringing_time > 1) * 100) / (SELECT count(*)  FROM `pkg_preditive_gen` WHERE `id_phonebook` IN ($id_campaign)) AS asr
+            '" . $campaign->name . "' name,
+            (SELECT avg(sessiontime)  FROM `pkg_cdr` WHERE `id_campaign` = $campaign->id) answered_call_ratio,
+            (SELECT count(*)  FROM `pkg_predictive_gen` WHERE `id_phonebook` IN ($id_campaign)) total_calls,
+            (SELECT count(*)  FROM `pkg_predictive_gen` WHERE `id_phonebook` IN ($id_campaign) AND ringing_time > 1) answered,
+            count(*) error,
+            (SELECT AVG( ringing_time ) FROM  `pkg_predictive_gen` WHERE `id_phonebook` IN ($id_campaign) AND ringing_time >0) ring_delay  ,
+            ((SELECT count(*)  FROM `pkg_predictive_gen` WHERE `id_phonebook` IN ($id_campaign) AND ringing_time > 1) * 100) / (SELECT count(*)  FROM `pkg_predictive_gen` WHERE `id_phonebook` IN ($id_campaign)) AS asr
+            FROM `pkg_predictive_gen` WHERE `id_phonebook` IN ($id_campaign) AND ringing_time  = 0";
 
-                FROM `pkg_preditive_gen` WHERE `id_phonebook` IN ($id_campaign) AND ringing_time  = 0";
-        $result = Yii::app()->db->createCommand($sql)->queryAll();
+        return Yii::app()->db->createCommand($sql)->queryAll();
     }
 }
