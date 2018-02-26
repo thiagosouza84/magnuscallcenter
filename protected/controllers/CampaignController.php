@@ -151,14 +151,20 @@ class CampaignController extends BaseController
                     ":stoptime"    => '0000-00-00 00:00:00',
                     ":login_type"  => 'LOGIN',
                 ));
-
-            $modelLoginsCampaign->stoptime   = date('Y-m-d H:i:s');
-            $modelLoginsCampaign->total_time = strtotime(date('Y-m-d H:i:s')) - strtotime($modelLoginsCampaign->starttime);
-            try {
-                $modelLoginsCampaign->save();
-            } catch (Exception $e) {
-                Yii::log(print_r($modelLoginsCampaign->errors, true), 'info');
+            if (count($modelLoginsCampaign)) {
+                $modelLoginsCampaign->stoptime   = date('Y-m-d H:i:s');
+                $modelLoginsCampaign->total_time = strtotime(date('Y-m-d H:i:s')) - strtotime($modelLoginsCampaign->starttime);
+                try {
+                    $modelLoginsCampaign->save();
+                } catch (Exception $e) {
+                    Yii::log(print_r($modelLoginsCampaign->errors, true), 'info');
+                }
             }
+
+            LoginsCampaign::model()->deleteAll('id_user = :key AND stoptime = :key1', array(
+                ':key'  => Yii::app()->session['id_user'],
+                ':key1' => '0000-00-00 00:00:00',
+            ));
 
             OperatorStatus::model()->deleteAll("id_user = " . Yii::app()->session['id_user']);
 
