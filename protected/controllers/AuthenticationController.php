@@ -290,7 +290,7 @@ class AuthenticationController extends BaseController
                 Yii::app()->session['campaign_open_url'] = isset($modelCampaign[0]->open_url)
                 ? $modelCampaign[0]->open_url : null;
                 Yii::app()->session['campaign_name'] = isset($modelCampaign[0]->name)
-                ? $modelCampaign[0]->name : null;
+                ? $modelCampaign[0]->name : Yii::t('yii', 'This campaign not have phonebook. Please add one');
                 Yii::app()->session['phonebookID'] = isset($modelCampaign[0]->id_phonebook)
                 ? $modelCampaign[0]->id_phonebook : null;
 
