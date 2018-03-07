@@ -214,7 +214,7 @@ class AuthenticationController extends BaseController
 
                 $labelExtraFields     = new stdClass;
                 $labelExtraFieldsType = new stdClass;
-                for ($i = 1; $i < 6; $i++) {
+                for ($i = 1; $i <= 8; $i++) {
                     if (in_array("option_$i", $fieldsAllow)) {
                         $property                    = "option_$i";
                         $labelExtraFields->$property = $modelCampaign->{'allow_option_' . $i};

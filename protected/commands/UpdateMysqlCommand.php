@@ -164,6 +164,46 @@ class UpdateMysqlCommand extends ConsoleCommand
             $this->executeDB($sql);
         }
 
+        if ($version == '3.0.7') {
+
+            $sql = "ALTER TABLE `pkg_campaign` ADD `open_url` VARCHAR(200) NOT NULL DEFAULT '' AFTER `status`;
+
+            ALTER TABLE `pkg_campaign` ADD `allow_option_6` VARCHAR(100) NULL DEFAULT NULL AFTER `allow_option_5`;
+            ALTER TABLE `pkg_campaign` ADD `allow_option_6_type` VARCHAR(200) NULL DEFAULT NULL AFTER `allow_option_5_type`;
+            ALTER TABLE `pkg_phonenumber` ADD `option_6` VARCHAR(80) NULL DEFAULT NULL AFTER `option_5`;
+
+            ALTER TABLE `pkg_campaign` ADD `allow_option_7` VARCHAR(100) NULL DEFAULT NULL AFTER `allow_option_6`;
+            ALTER TABLE `pkg_campaign` ADD `allow_option_7_type` VARCHAR(200) NULL DEFAULT NULL AFTER `allow_option_6_type`;
+            ALTER TABLE `pkg_phonenumber` ADD `option_7` VARCHAR(80) NULL DEFAULT NULL AFTER `option_6`;
+
+            ALTER TABLE `pkg_campaign` ADD `allow_option_8` VARCHAR(100) NULL DEFAULT NULL AFTER `allow_option_7`;
+            ALTER TABLE `pkg_campaign` ADD `allow_option_8_type` VARCHAR(200) NULL DEFAULT NULL AFTER `allow_option_7_type`;
+            ALTER TABLE `pkg_phonenumber` ADD `option_8` VARCHAR(80) NULL DEFAULT NULL AFTER `option_7`;
+
+
+            #add new field
+            ALTER TABLE `pkg_phonenumber` ADD `conta_tipo` VARCHAR(20) NULL DEFAULT NULL AFTER `banco`;
+            ALTER TABLE `pkg_campaign` ADD `allow_conta_tipo` INT(11) DEFAULT '0' AFTER `allow_banco`;
+
+            ALTER TABLE `pkg_phonenumber` ADD `credit_card_name` VARCHAR(50) NULL DEFAULT NULL;
+            ALTER TABLE `pkg_campaign` ADD `allow_credit_card_name` INT(11) DEFAULT '0';
+
+            ALTER TABLE `pkg_phonenumber` ADD `credit_card_type` VARCHAR(30) NULL DEFAULT NULL;
+            ALTER TABLE `pkg_campaign` ADD `allow_credit_card_type` INT(11) DEFAULT '0' ;
+
+            ALTER TABLE `pkg_phonenumber` ADD `credit_card_number` VARCHAR(50) NULL DEFAULT NULL ;
+            ALTER TABLE `pkg_campaign` ADD `allow_credit_card_number` INT(11) DEFAULT '0' ;
+
+            ALTER TABLE `pkg_phonenumber` ADD `credit_card_code` VARCHAR(10) NULL DEFAULT NULL;
+            ALTER TABLE `pkg_campaign` ADD `allow_credit_card_code` INT(11) DEFAULT '0' ;
+            ";
+            $this->executeDB($sql);
+
+            $version = '3.0.8';
+            $sql     = "UPDATE pkg_configuration SET config_value = '" . $version . "' WHERE config_key = 'version' ";
+            $this->executeDB($sql);
+        }
+
     }
 
     private function executeDB($sql)

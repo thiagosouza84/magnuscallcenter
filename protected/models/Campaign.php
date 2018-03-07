@@ -47,24 +47,33 @@ class Campaign extends Model
                     allow_company,allow_birth_date,allow_type_user,allow_sexo,allow_edad,allow_profesion,
                     allow_id_phonebook, allow_name, allow_sessiontime, allow_beneficio_number,
                     allow_quantidade_transacoes,allow_inicio_beneficio,allow_beneficio_valor,
-                    allow_banco,allow_agencia,allow_conta,allow_telefone_fixo1,
+                    allow_banco,allow_conta_tipo,allow_agencia,allow_conta,allow_telefone_fixo1,
                     allow_telefone_fixo2,allow_telefone_fixo3,allow_telefone_celular1,
                     allow_telefone_celular2,allow_telefone_celular3, allow_telefone_fixo_comercial1,
                     allow_telefone_fixo_comercial2,allow_telefone_fixo_comercial3, allow_parente1,
                     allow_fone_parente1,allow_parente2,allow_fone_parente2,allow_parente3,allow_fone_parente3,
                     allow_vizinho1,allow_telefone_vizinho1,allow_vizinho2,allow_telefone_vizinho2,
-                    allow_vizinho3,allow_telefone_vizinho3, timeout, retry, wrapuptime, weight,
+                    allow_vizinho3,allow_telefone_vizinho3, allow_credit_card_code, allow_credit_card_number,
+                    allow_credit_card_type, allow_credit_card_name,
+
+                    timeout, retry, wrapuptime, weight,
                     periodic-announce-frequency, announce-frequency, call_limit, call_next_try, predictive', 'numerical', 'integerOnly' => true),
             array('name, description', 'length', 'max' => 100),
             array('open_url', 'length', 'max' => 200),
             array('open_url', 'url'),
             array('status', 'length', 'max' => 1),
-            array('startingdate, expirationdate, allow_option_1_type, allow_option_2_type, allow_option_3_type,
+            array('startingdate, expirationdate', 'length', 'max' => 50),
+
+            array('allow_option_1_type, allow_option_2_type, allow_option_3_type,
                     allow_option_4_type, allow_option_5_type', 'length', 'max' => 50),
+
+            array(' allow_option_6_type, allow_option_7_type,allow_option_8_type', 'length', 'max' => 200),
+
+            array('allow_option_1, allow_option_2, allow_option_3, allow_option_4,
+                    allow_option_5, allow_option_6, allow_option_7, allow_option_8', 'length', 'max' => 100),
+
             array('daily_start_time, daily_stop_time, daily_morning_start_time, daily_morning_stop_time,
                     daily_afternoon_start_time, daily_afternoon_stop_time, announce-position', 'length', 'max' => 8),
-            array('allow_option_1, allow_option_2, allow_option_3, allow_option_4,
-                    allow_option_5', 'length', 'max' => 100),
             array('name', 'unique', 'caseSensitive' => 'false'),
             array('musiconhold, strategy', 'length', 'max' => 128),
             array('ringinuse, eventmemberstatus, autopause, setqueuevar, setqueueentryvar,
@@ -78,7 +87,7 @@ class Campaign extends Model
     {
         $this->name        = preg_replace("/ /", "-", $this->name);
         $this->setqueuevar = $this->setqueueentryvar = $this->setinterfacevar = 'yes';
-        for ($i = 1; $i <= 5; $i++) {
+        for ($i = 1; $i <= 8; $i++) {
 
             if (strlen($this->{"allow_option_" . $i}) == 0) {
                 $this->{"allow_option_" . $i . "_type"} = '';

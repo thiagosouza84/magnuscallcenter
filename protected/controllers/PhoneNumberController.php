@@ -397,7 +397,7 @@ class PhoneNumberController extends BaseController
             $filter = preg_replace("/idPhonebookname/", 'g.name', $filter);
         }
 
-        $sql     = "UPDATE pkg_phonenumber t  JOIN pkg_phonebook g ON t.id_phonebook = g.id SET t.id_category = 1 WHERE t.id_category = 0 AND $filter";
+        $sql     = "UPDATE pkg_phonenumber t  JOIN pkg_phonebook g ON t.id_phonebook = g.id SET t.id_category = 1, try = 0 WHERE t.id_category = 0 AND $filter";
         $command = Yii::app()->db->createCommand($sql);
         foreach ($this->paramsFilter as $key => $value) {
             $command->bindValue(":$key", $value, PDO::PARAM_STR);
