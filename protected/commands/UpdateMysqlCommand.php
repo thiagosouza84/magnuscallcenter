@@ -166,8 +166,7 @@ class UpdateMysqlCommand extends ConsoleCommand
 
         if ($version == '3.0.7') {
 
-            $sql = "ALTER TABLE `pkg_campaign` ADD `open_url` VARCHAR(200) NOT NULL DEFAULT '' AFTER `status`;
-
+            $sql = "
             ALTER TABLE `pkg_campaign` ADD `allow_option_6` VARCHAR(100) NULL DEFAULT NULL AFTER `allow_option_5`;
             ALTER TABLE `pkg_campaign` ADD `allow_option_6_type` VARCHAR(200) NULL DEFAULT NULL AFTER `allow_option_5_type`;
             ALTER TABLE `pkg_phonenumber` ADD `option_6` VARCHAR(80) NULL DEFAULT NULL AFTER `option_5`;

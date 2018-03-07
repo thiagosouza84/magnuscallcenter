@@ -271,7 +271,7 @@ class PredictiveCommand extends ConsoleCommand
                 $datebackcall = date('Y-m-d H:i', mktime(date('H'), date('i') - 10, date('s'), date('m'), date('d'), date('Y')));
 
                 $criteria = new CDbCriteria();
-                $criteria->addCondition('id_phonebook IN ( SELECT id_phonebook FROM pkg_campaign_phonebook WHERE id_campaign = :key1 ) AND id_category = 1 OR ( id_category = 2 AND datebackcall BETWEEN :key AND NOW())');
+                $criteria->addCondition('try < 4 AND id_phonebook IN ( SELECT id_phonebook FROM pkg_campaign_phonebook WHERE id_campaign = :key1 ) AND id_category = 1 OR ( id_category = 2 AND datebackcall BETWEEN :key AND NOW())');
                 $criteria->params[':key']  = $datebackcall;
                 $criteria->params[':key1'] = $modelCampaign[$i]->id;
                 $criteria->order           = 'datebackcall DESC';
@@ -297,6 +297,12 @@ class PredictiveCommand extends ConsoleCommand
                             '3' => 'mobile',
                         );
 
+                        if ($phone->try > 3) {
+                            MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . " Nao tem mais numeros para ligar PHONE_ID" . $phone->id . ' ' . $destination . "\n\n");
+                            $phone->status = 0;
+                            $phone->save();
+                            break;
+                        }
                         $destination = $phone->{$types[$phone->try]};
 
                         $log = $this->debug >= 1 ? MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . " ID=" . $phone->id . ' - Destination' . $destination) : null;
@@ -315,9 +321,13 @@ class PredictiveCommand extends ConsoleCommand
 
                     }
 
+                    if (strlen($destination) < 5) {
+                        continue;
+                    }
+
                     if ($types[$phone['try']] != 'number') {
 
-                        $log = $this->debug >= 1 ? MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . " " . $phone->id . ", tentando ligar para outro numero ->  " . $types[$phone->try] . " " . $phone->{$types[$phone->try]}) : null;
+                        $log = $this->debug >= 1 ? MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . " " . $phone->id . ", tentando ligar para outro numero") : null;
                     }
 
                     $destination = Portabilidade::getDestination($destination, $phone->id_phonebook);
