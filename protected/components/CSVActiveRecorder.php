@@ -114,7 +114,7 @@ class CSVActiveRecorder
     private function validateColumns($columns)
     {
         $modelColumns = array_keys($this->model->getAttributes());
-
+        Yii::log(print_r($columns, true), 'error');
         if (count(array_intersect($columns, $modelColumns)) == count($columns)) {
             return true;
         } else {

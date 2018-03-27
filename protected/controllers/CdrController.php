@@ -181,4 +181,12 @@ class CdrController extends BaseController
         return $filter;
     }
 
+    public function removeColumns($columns)
+    {
+        if (isset($columns[0]['dataIndex']) && $columns[0]['dataIndex'] == 'id') {
+            unset($columns[0]);
+        }
+        return $columns;
+    }
+
 }
