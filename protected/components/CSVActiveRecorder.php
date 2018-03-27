@@ -50,6 +50,11 @@ class CSVActiveRecorder
 
     private function createSQL($tableName)
     {
+
+        /*
+        LOAD DATA INFILE '/Users/macbookpro/Downloads/ABS.csv' INTO TABLE pkg_phonenumber CHARACTER SET UTF8  FIELDS TERMINATED BY ';' LINES TERMINATED BY '\r\n' IGNORE 1 LINES (@cpf,@nome,@banco,@agencia,@conta,@address,@Endereço_número,@cep,@bairro,@cidade,@estado,@number_home,@e_mail,@aniversário) SET cpf = @cpf,  name = @nome,  banco = @banco,  agencia = @agencia,  conta = @conta,  address = @address,  address_number = @Endereço_número,  zip_code = @cep,  neighborhood = @bairro,  city = @cidade,  state = @estado,  number_home = @number_home,  email = @e_mail,  birth_date = @aniversário,  id_phonebook = 54, id_category = 1
+         */
+
         $sql = "LOAD DATA LOCAL INFILE '" . $this->data['filename'] . "'" .
         " INTO TABLE " . $tableName .
         " CHARACTER SET UTF8 " .

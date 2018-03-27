@@ -203,6 +203,18 @@ class UpdateMysqlCommand extends ConsoleCommand
             $this->executeDB($sql);
         }
 
+        if ($version == '3.0.8') {
+
+            $sql = "ALTER TABLE `pkg_phonenumber` CHANGE `address_number` `address_number` VARCHAR(10) NULL DEFAULT NULL;
+                    ALTER TABLE `pkg_phonenumber` CHANGE `name` `name` CHAR(100) CHARACTER SET utf8 COLLATE utf8_bin NULL DEFAULT NULL;
+            ";
+            $this->executeDB($sql);
+
+            $version = '3.0.9';
+            $sql     = "UPDATE pkg_configuration SET config_value = '" . $version . "' WHERE config_key = 'version' ";
+            $this->executeDB($sql);
+        }
+
     }
 
     private function executeDB($sql)
