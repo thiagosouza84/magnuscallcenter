@@ -1657,6 +1657,13 @@ class BaseController extends CController
             $this->nameMsg     => count($errors) > 0 ? implode(',', $errors) : $this->msgSuccess,
         ));
 
+        $this->afterImportFromCsv($values);
+
+    }
+
+    public function afterImportFromCsv($values)
+    {
+        return;
     }
 
     public function upload($fieldName, $folder, $fileName = null)

@@ -410,4 +410,15 @@ class PhoneNumberController extends BaseController
         ));
 
     }
+
+    public function afterImportFromCsv($values)
+    {
+        if ($value['allowDuplicate'] == 0) {
+            //remove duplicates in the phonebook
+            $sql = "DELETE n1 FROM pkg_phonenumber n1, pkg_phonenumber n2 WHERE n1.id_phonebook = " . $values['id_phonebook'] . " AND n1.id > n2.id AND n1.number = n2.number";
+            Yii::app()->db->createCommand($sql)->execute();
+
+        }
+        return;
+    }
 }
