@@ -49,3 +49,5 @@ mkdir -p /usr/local/src/magnus
 chmod -R 777 /usr/local/src/magnus/
 chmod -R 750 /var/www/html/callcenter/resources/sounds
 chmod -R 750 /var/www/html/callcenter/resources/images
+mkdir -p /var/www/tmpmagnus
+chmod -R 777 /var/www/tmpmagnus
