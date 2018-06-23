@@ -119,7 +119,7 @@ class PhoneNumberController extends BaseController
             $category = explode(",", $this->config['global']['notify_url_category']);
 
             if (in_array($model->id_category, $category)) {
-                $post = json_encode($modelPhoneNumber);
+                $post = json_encode($model);
                 $post = urlencode($post);
                 file_get_contents($url . "?row=$post");
             }
@@ -134,7 +134,35 @@ class PhoneNumberController extends BaseController
         if ($modelUser) {
             $modelUser->auto_load_phonenumber = 0;
             $modelUser->save();
-            echo true;
+
+            if ($this->config['global']['notify_url_when_receive_number']) {
+                //example
+                //http://google.com?id=%dni%&numero=%number%&magnus=1&name=%name%
+                if ($modelUser->id_current_phonenumber > 0) {
+                    $url = $this->config['global']['notify_url_when_receive_number'];
+
+                    if (preg_match('/\%/', $url)) {
+                        $modelPhoneNumber = $this->abstractModel->findByPk($modelUser->id_current_phonenumber);
+
+                        $parts = parse_url($url);
+                        parse_str($parts['query'], $query);
+                        foreach ($query as $key => $value) {
+
+                            if (preg_match('/\%/', $value)) {
+                                $value = preg_replace('/\%/', '', $value);
+                                $url   = preg_replace('/%' . $value . '%/', urlencode($modelPhoneNumber->{$value}), $url);
+                            }
+                        }
+                    }
+                    echo $url;
+
+                } else {
+                    echo true;
+                }
+            } else {
+                echo true;
+            }
+
         } else {
             echo false;
         }
@@ -413,7 +441,7 @@ class PhoneNumberController extends BaseController
 
     public function afterImportFromCsv($values)
     {
-        if ($value['allowDuplicate'] == 0) {
+        if ($values['allowDuplicate'] == 0) {
             //remove duplicates in the phonebook
             $sql = "DELETE n1 FROM pkg_phonenumber n1, pkg_phonenumber n2 WHERE n1.id_phonebook = " . $values['id_phonebook'] . " AND n1.id > n2.id AND n1.number = n2.number";
             Yii::app()->db->createCommand($sql)->execute();

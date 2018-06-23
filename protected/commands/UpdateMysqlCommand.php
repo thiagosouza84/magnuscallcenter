@@ -215,6 +215,17 @@ class UpdateMysqlCommand extends ConsoleCommand
             $this->executeDB($sql);
         }
 
+        if ($version == '3.0.9') {
+
+            $sql = "INSERT INTO pkg_configuration VALUES (NULL, 'Abrir URL quando operador receber a chamada', 'notify_url_when_receive_number', '', 'Abrir URL quando operador receber a chamada', 'global', '1');
+            ";
+            $this->executeDB($sql);
+
+            $version = '3.1.0';
+            $sql     = "UPDATE pkg_configuration SET config_value = '" . $version . "' WHERE config_key = 'version' ";
+            $this->executeDB($sql);
+        }
+
     }
 
     private function executeDB($sql)
