@@ -59,8 +59,8 @@ class Campaign extends Model
                     timeout, retry, wrapuptime, weight,
                     periodic-announce-frequency, announce-frequency, call_limit, call_next_try, predictive', 'numerical', 'integerOnly' => true),
             array('name, description', 'length', 'max' => 100),
-            array('open_url', 'length', 'max' => 200),
-            array('open_url', 'url'),
+            array('open_url,open_url_when_answer_call', 'length', 'max' => 200),
+            array('open_url,open_url_when_answer_call', 'url'),
             array('status', 'length', 'max' => 1),
             array('startingdate, expirationdate', 'length', 'max' => 50),
 
@@ -72,7 +72,7 @@ class Campaign extends Model
             array('allow_option_1, allow_option_2, allow_option_3, allow_option_4,
                     allow_option_5, allow_option_6, allow_option_7, allow_option_8', 'length', 'max' => 100),
 
-            array('daily_start_time, daily_stop_time, daily_morning_start_time, daily_morning_stop_time,
+            array('daily_morning_start_time, daily_morning_stop_time,
                     daily_afternoon_start_time, daily_afternoon_stop_time, announce-position', 'length', 'max' => 8),
             array('name', 'unique', 'caseSensitive' => 'false'),
             array('musiconhold, strategy', 'length', 'max' => 128),

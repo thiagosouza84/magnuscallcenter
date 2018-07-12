@@ -30,6 +30,14 @@ class Authenticate
 
         $modelUser = User::model()->find("username = :accountcode", array(':accountcode' => $MAGNUS->accountcode));
 
+        //user is not loged but have allow_direct_call_campaign
+        $agi->verbose($modelUser->id_campaign . ' ' . $modelUser->allow_direct_call_campaign);
+        if ($modelUser->id_campaign < 1 && $modelUser->allow_direct_call_campaign > 1) {
+            $modelUser->id_campaign = $modelUser->allow_direct_call_campaign;
+            $agi->verbose('User call with direct campaign ' . $modelUser->id_campaign);
+            $MAGNUS->forceIdCaterory = 11;
+        }
+
         if (count($modelUser) && $modelUser->id_campaign > 0) {
             $modelOperatorStatus = OperatorStatus::model()->find("id_user = :id_user AND queue_paused = 1", array(':id_user' => $modelUser->id));
             if (count($modelOperatorStatus)) {

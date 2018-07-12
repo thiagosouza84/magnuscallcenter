@@ -120,10 +120,12 @@ class CampaignController extends BaseController
             }
              */
 
-            $msg = Yii::t('yii', 'Usted esta logueado en la campaña ') . $modelCampaign->name;
+            $msg = Yii::t('yii', 'Usted esta logueado en la campaña ') . $modelCampaign->name . ' ' . $modelCampaign->open_url_when_answer_call;
 
-            Yii::app()->session['id_campaign']   = $modelCampaign->id;
-            Yii::app()->session['campaign_name'] = $modelCampaign->name;
+            Yii::app()->session['id_campaign']               = $modelCampaign->id;
+            Yii::app()->session['campaign_name']             = $modelCampaign->name;
+            Yii::app()->session['open_url_when_answer_call'] = $modelCampaign->open_url_when_answer_call;
+
             /*if ($resultNameCampaign[0]['predictive'] == 1)
         $predictive = true;*/
 

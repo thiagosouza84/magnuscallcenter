@@ -63,6 +63,7 @@ class Magnus
     public $portabilidade        = false;
     public $play_audio           = false;
     public $magnusFilesDirectory = '/usr/local/src/magnus/';
+    public $forceIdCaterory;
 
     public function Magnus()
     {

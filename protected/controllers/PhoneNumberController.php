@@ -135,11 +135,11 @@ class PhoneNumberController extends BaseController
             $modelUser->auto_load_phonenumber = 0;
             $modelUser->save();
 
-            if ($this->config['global']['notify_url_when_receive_number']) {
+            if (strlen(Yii::app()->session['open_url_when_answer_call']) > 10) {
                 //example
                 //http://google.com?id=%dni%&numero=%number%&magnus=1&name=%name%
                 if ($modelUser->id_current_phonenumber > 0) {
-                    $url = $this->config['global']['notify_url_when_receive_number'];
+                    $url = Yii::app()->session['open_url_when_answer_call'];
 
                     if (preg_match('/\%/', $url)) {
                         $modelPhoneNumber = $this->abstractModel->findByPk($modelUser->id_current_phonenumber);
@@ -157,14 +157,14 @@ class PhoneNumberController extends BaseController
                     echo $url;
 
                 } else {
-                    echo true;
+                    echo 'true';
                 }
             } else {
-                echo true;
+                echo 'true';
             }
 
         } else {
-            echo false;
+            echo 'true';
         }
 
     }

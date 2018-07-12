@@ -56,7 +56,7 @@ class Calc
 
     public function updateSystem(&$MAGNUS, &$agi, $calledstation, $terminatecauseid, $doibill = 1, $didcall = 0, $callback = 0)
     {
-        $agi->verbose('Update System', 6);
+        $agi->verbose('Update System', 1);
 
         $agi->verbose('rate_engine_updatesystem');
         $dialstatus             = $this->dialstatus;
@@ -76,11 +76,17 @@ class Calc
 
         $MAGNUS->id_user = isset($MAGNUS->id_user) ? $MAGNUS->id_user : 'NULL';
 
+        if ($MAGNUS->forceIdCaterory > 0) {
+            $id_category = $MAGNUS->forceIdCaterory;
+        } else {
+            $id_category = "NULL";
+        }
         $fields = "uniqueid, sessionid, id_category,  id_user, id_campaign, id_phonebook, id_phonenumber, id_trunk, starttime, stoptime, sessiontime, calledstation, terminatecauseid, real_sessiontime, dnid";
-        $value  = "'$MAGNUS->uniqueid', '$MAGNUS->channel', NULL, $MAGNUS->id_user, $id_campaign_number, $id_phonebook, $id_phonenumber, $this->usedtrunk, SUBDATE(CURRENT_TIMESTAMP, INTERVAL $sessiontime SECOND), now(), '$sessiontime', '$calledstation', '$terminatecauseid', '$this->real_answeredtime', '$MAGNUS->dnid'";
+        $value  = "'$MAGNUS->uniqueid', '$MAGNUS->channel', $id_category, $MAGNUS->id_user, $id_campaign_number, $id_phonebook, $id_phonenumber, $this->usedtrunk, SUBDATE(CURRENT_TIMESTAMP, INTERVAL $sessiontime SECOND), now(), '$sessiontime', '$calledstation', '$terminatecauseid', '$this->real_answeredtime', '$MAGNUS->dnid'";
 
         $sql = "INSERT INTO pkg_cdr ($fields) VALUES ($value)";
-        $agi->verbose($sql, 25);
+
+        $agi->verbose($sql, 1);
 
         try {
             Yii::app()->db->createCommand($sql)->execute();
@@ -141,7 +147,7 @@ class Calc
                 } else {
                     $number = $MAGNUS->destination;
                 }
-
+                $date  = date('dmY');
                 $myres = $agi->execute("MixMonitor " . $MAGNUS->config['global']['record_patch'] . "/{$date}/{$MAGNUS->destination}.{$MAGNUS->uniqueid}.gsm,b");
                 $agi->verbose("MixMonitor " . $MAGNUS->config['global']['record_patch'] . "/{$date}/{$MAGNUS->destination}.{$MAGNUS->uniqueid}.gsm,b");
             }

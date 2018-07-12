@@ -51,16 +51,16 @@ class PredictiveAgi
         if ($MAGNUS->config['agi-conf1']['amd'] == 1) {
             $amd_status = $agi->get_variable("AMDSTATUS", true);
             if (!preg_match("/HUMAN/", $amd_status)) {
-                $agi->verbose(date("Y-m-d H:i:s") . " => " . $MAGNUS->dnid . ': amd_status ' . $amd_status . ", hangup call", 1);
+                $agi->verbose(date("Y-m-d H:i:s") . " => " . $MAGNUS->dnid . ': amd_status ' . $amd_status . ", hangup call", 5);
                 $agi->hangup();
                 exit;
             } else {
-                $agi->verbose(date("Y-m-d H:i:s") . " => " . $MAGNUS->dnid . ': amd_status ' . $amd_status . ", send call to agent\n", 3);
+                $agi->verbose(date("Y-m-d H:i:s") . " => " . $MAGNUS->dnid . ': amd_status ' . $amd_status . ", send call to agent\n", 5);
             }
         }
         //calcula o tempo que gastou para atender o numero
         $ringing_time = $startTime - $agi->get_variable("STARTCALL", true);
-        $agi->verbose($agi->get_variable("ALEARORIO", true));
+        $agi->verbose($agi->get_variable("ALEARORIO", true), 25);
 
         PredictiveGen::model()->updateAll(
             array('ringing_time' => $ringing_time),
@@ -68,7 +68,7 @@ class PredictiveAgi
             array(':key' => $agi->get_variable("ALEARORIO", true))
         );
 
-        $agi->verbose(date("Y-m-d H:i:s") . " => $MAGNUS->dnid, enviado para queue " . $modelCampaign->name, 1);
+        $agi->verbose(date("Y-m-d H:i:s") . " => $MAGNUS->dnid, enviado para queue " . $modelCampaign->name, 10);
 
         $agi->execute("Queue", $modelCampaign->name . ',,,,60,/var/www/html/callcenter/agi.php');
 
@@ -79,14 +79,14 @@ class PredictiveAgi
                 if (!is_dir("" . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY'))) {
                     exec("mkdir " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY'));
                 }
-                $agi->verbose("mv " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY') . "/" . $MAGNUS->dnid . "." . $MAGNUS->uniqueid . ".gsm " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY') . "/");
+                $agi->verbose("mv " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY') . "/" . $MAGNUS->dnid . "." . $MAGNUS->uniqueid . ".gsm " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY') . "/", 15);
 
                 exec("mv " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY') . "/" . $MAGNUS->dnid . "." . $MAGNUS->uniqueid . ".gsm " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY') . "/");
 
             }
         }
 
-        $agi->verbose(date("Y-m-d H:i:s") . " => $MAGNUS->dnid, " . $MAGNUS->uniqueid . " DELIGOU A CHAMADAS", 1);
+        $agi->verbose(date("Y-m-d H:i:s") . " => $MAGNUS->dnid, " . $MAGNUS->uniqueid . " DELIGOU A CHAMADAS", 15);
 
         $endTime = time();
 

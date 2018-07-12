@@ -226,6 +226,29 @@ class UpdateMysqlCommand extends ConsoleCommand
             $this->executeDB($sql);
         }
 
+        if ($version == '3.1.0') {
+
+            $sql = "ALTER TABLE `pkg_user` ADD `allow_direct_call_campaign` INT(11) NULL DEFAULT NULL AFTER `auto_load_phonenumber`;";
+            $this->executeDB($sql);
+
+            $version = '3.1.1';
+            $sql     = "UPDATE pkg_configuration SET config_value = '" . $version . "' WHERE config_key = 'version' ";
+            $this->executeDB($sql);
+        }
+
+        if ($version == '3.1.1') {
+
+            $sql = "ALTER TABLE `pkg_campaign` ADD `open_url_when_answer_call` VARCHAR(200) NULL DEFAULT NULL AFTER `open_url`;";
+            $this->executeDB($sql);
+
+            $sql = "DELETE FROM `pkg_configuration` WHERE config_key = 'notify_url_when_receive_number'";
+            $this->executeDB($sql);
+
+            $version = '3.1.2';
+            $sql     = "UPDATE pkg_configuration SET config_value = '" . $version . "' WHERE config_key = 'version' ";
+            $this->executeDB($sql);
+        }
+
     }
 
     private function executeDB($sql)
