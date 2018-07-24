@@ -27,6 +27,21 @@ class PhoneBookController extends BaseController
         parent::init();
     }
 
+    public function extraFilterCustom($filter)
+    {
+        $filter .= ' AND id > 0';
+
+        $filter .= !preg_match("/status/", $filter) ? ' AND status = 1' : false;
+
+        if (Yii::app()->session['isOperator']) {
+            $filter = $this->extraFilterCustomOperator($filter);
+        } else if (Yii::app()->session['isClient']) {
+            $filter = $this->extraFilterCustomClient($filter);
+        }
+
+        return $filter;
+    }
+
     public function actionRead($asJson = true, $condition = null)
     {
         $filter       = isset($_REQUEST['filter']) ? $_REQUEST['filter'] : null;
