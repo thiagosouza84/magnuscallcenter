@@ -23,8 +23,8 @@ class MassiveCall
     public function processCall($agi, &$MAGNUS, &$Calc)
     {
         $agi->answer();
-        $now       = time();
-        $uploaddir = $MAGNUS->magnusFilesDirectory . 'sounds/';
+        $now      = time();
+        $audioDir = $MAGNUS->magnusFilesDirectory . 'sounds/';
 
         if ($MAGNUS->dnid == 'failed' || !is_numeric($MAGNUS->dnid)) {
             $agi->verbose("Hangup becouse dnid is OutgoingSpoolFailed", 25);
@@ -76,7 +76,7 @@ class MassiveCall
         $agi->set_variable("CALLERID(num)", $destination);
 
         if ($res_dtmf['result'] == $modelCampaign->forward_number) {
-            Queue::queueMassivaCall($agi, $MAGNUS, $Calc, $modelCampaign);
+            Queue::queueMassivaCall($agi, $MAGNUS, $Calc, $modelCampaign, $id_phonenumber);
         } else {
             $MANGUS->hangup($agi);
         }

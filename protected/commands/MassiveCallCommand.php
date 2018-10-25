@@ -58,6 +58,10 @@ class MassiveCallCommand extends ConsoleCommand
                 $sleep  = $campaign->frequency / 60;
             }
 
+            if ($nbpage < 1) {
+                $nbpage = 1;
+            }
+
             $modelMassiveCallPhoneNumber = MassiveCallPhoneNumber::getPhoneNumbertoSend($campaign->id, intval($nbpage));
 
             if (DEBUG >= 1) {
@@ -136,6 +140,7 @@ class MassiveCallCommand extends ConsoleCommand
                 $call .= "Set:CALLED=" . $old_destination . "\n";
                 $call .= "Set:PHONENUMBER_ID=" . $phone['id'] . "\n";
                 $call .= "Set:CAMPAIGN_ID=" . $campaign->id . "\n";
+                $call .= "Set:IDTRUNK=" . $idTrunk . "\n";
                 $call .= "Set:MASSIVE_CALL=1\n";
 
                 if (DEBUG == 2) {

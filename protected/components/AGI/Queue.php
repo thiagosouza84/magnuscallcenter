@@ -31,7 +31,7 @@ class Queue
         $agi->verbose(print_r($result_did, true));
 
         $sql = "SELECT * FROM pkg_campaign WHERE id =" . $result_did[0]['id_campaign'];
-        $agi->verbose($sql, 25);
+        $agi->verbose($sql);
         $campaignResult = Yii::app()->db->createCommand($sql)->queryAll();
 
         $nowtime = date('H:s');
@@ -48,7 +48,7 @@ class Queue
         }
 
         $sql = "SELECT * FROM pkg_campaign_phonebook WHERE id_campaign = " . $campaignResult[0]['id'];
-        $agi->verbose($sql, 25);
+        $agi->verbose($sql);
         $resultPhoneBook = Yii::app()->db->createCommand($sql)->queryAll();
 
         if (count($resultPhoneBook) < 1) {
@@ -59,7 +59,7 @@ class Queue
         $sql = "SELECT * FROM pkg_phonenumber WHERE number = '" . $MAGNUS->destination . "' AND
                     id_phonebook IN (SELECT id_phonebook FROM pkg_campaign_phonebook WHERE
                     id_campaign = " . $campaignResult[0]['id'] . ")";
-        $agi->verbose($sql, 25);
+        $agi->verbose($sql);
         $resultPhoneNumber = Yii::app()->db->createCommand($sql)->queryAll();
 
         if (count($resultPhoneNumber) > 0) {
@@ -77,11 +77,12 @@ class Queue
         $aleatorio = str_replace(" ", "", microtime(true));
 
         $sql = "INSERT INTO pkg_predictive VALUES (NULL, '" . $MAGNUS->uniqueid . "', '" . $idPhoneNumber . "', NULL)";
+        $agi->verbose($sql);
         Yii::app()->db->createCommand($sql)->execute();
-        $agi->verbose($sql, 25);
 
         //salvamos os dados da chamada gerada
         $sql = "INSERT INTO pkg_preditive_gen (date, uniqueID,id_phonebook,ringing_time) VALUES ('" . time() . "', " . $MAGNUS->uniqueid . ", " . $resultPhoneBook[0]['id_phonebook'] . ",0)";
+        $agi->verbose($sql);
         Yii::app()->db->createCommand($sql)->execute();
 
         $startTime = strtotime("now");
@@ -116,7 +117,7 @@ class Queue
             }
         }
 
-        $agi->verbose(date("Y-m-d H:i:s") . " => $MAGNUS->dnid, " . $MAGNUS->uniqueid . " DELIGOU A CHAMADAS", 1);
+        $agi->verbose(date("Y-m-d H:i:s") . " => $MAGNUS->dnid, " . $MAGNUS->uniqueid . " DELIGOU A CHAMADAS teste teste", 1);
 
         $endTime = strtotime("now");
 
@@ -144,13 +145,11 @@ class Queue
         $Calc->updateSystem($MAGNUS, $agi, $MAGNUS->dnid, $terminatecauseid);
     }
 
-    public function queueMassivaCall($agi, &$MAGNUS, &$Calc, $modelCampaign)
+    public function queueMassivaCall($agi, &$MAGNUS, &$Calc, $modelCampaign, $idPhoneNumber)
     {
         $agi->verbose("Queue module", 5);
         $agi->answer();
         $startTime = time();
-
-        $agi->verbose(print_r($result_did, true));
 
         $startTime = strtotime("now");
         $agi->set_variable("CALLERID(num)", $agi->get_variable("CALLED", true));
@@ -158,20 +157,90 @@ class Queue
 
         $modelCampainForward = Campaign::model()->findByPk($modelCampaign->id_campaign);
 
+        $modelCampaignPhonebook = CampaignPhonebook::model()->find('id_campaign = :key',
+            array(':key' => $modelCampaign->id_campaign));
+
         $agi->verbose('Receptivo - Send call to Campaign ' . $modelCampainForward->name, 5);
         //SET uniqueid para ser atualizado a tabela pkg_predictive quando a ligação for atendida
         $agi->set_variable("UNIQUEID", $MAGNUS->uniqueid);
 
         $agi->set_variable("CALLERID", $MAGNUS->dnid);
         $agi->set_variable("CALLED", $MAGNUS->dnid);
-        $agi->set_variable("PHONENUMBER_ID", $idPhoneNumber);
-        $agi->set_variable("IDPHONEBOOK", $agi->get_variable("PHONENUMBER_ID", true));
+
         $agi->set_variable("CAMPAIGN_ID", $modelCampainForward->id);
         $agi->set_variable("STARTCALL", time());
         $agi->set_variable("ALEARORIO", $aleatorio);
+        $agi->verbose("Find number data in massivecallphone id = " . $agi->get_variable("PHONENUMBER_ID", true) . " \n\n\n\n\n");
+
+        $modelMassiveCallPhoneNumber = MassiveCallPhoneNumber::model()->findByPk((int) $agi->get_variable("PHONENUMBER_ID", true));
+
+        $modelPhoneNumber                           = new PhoneNumber();
+        $modelPhoneNumber->id_phonebook             = $modelCampaignPhonebook->id_phonebook;
+        $modelPhoneNumber->id_category              = 0;
+        $modelPhoneNumber->status                   = 1;
+        $modelPhoneNumber->number                   = $modelMassiveCallPhoneNumber->number;
+        $modelPhoneNumber->name                     = $modelMassiveCallPhoneNumber->name;
+        $modelPhoneNumber->email                    = $modelMassiveCallPhoneNumber->email;
+        $modelPhoneNumber->info                     = $modelMassiveCallPhoneNumber->info;
+        $modelPhoneNumber->city                     = $modelMassiveCallPhoneNumber->city;
+        $modelPhoneNumber->address                  = $modelMassiveCallPhoneNumber->address;
+        $modelPhoneNumber->state                    = $modelMassiveCallPhoneNumber->state;
+        $modelPhoneNumber->country                  = $modelMassiveCallPhoneNumber->country;
+        $modelPhoneNumber->dni                      = $modelMassiveCallPhoneNumber->dni;
+        $modelPhoneNumber->mobile                   = $modelMassiveCallPhoneNumber->mobile;
+        $modelPhoneNumber->number_home              = $modelMassiveCallPhoneNumber->number_home;
+        $modelPhoneNumber->number_office            = $modelMassiveCallPhoneNumber->number_office;
+        $modelPhoneNumber->zip_code                 = $modelMassiveCallPhoneNumber->zip_code;
+        $modelPhoneNumber->company                  = $modelMassiveCallPhoneNumber->company;
+        $modelPhoneNumber->birth_date               = $modelMassiveCallPhoneNumber->birth_date;
+        $modelPhoneNumber->type_user                = $modelMassiveCallPhoneNumber->type_user;
+        $modelPhoneNumber->sexo                     = $modelMassiveCallPhoneNumber->sexo;
+        $modelPhoneNumber->edad                     = $modelMassiveCallPhoneNumber->edad;
+        $modelPhoneNumber->profesion                = $modelMassiveCallPhoneNumber->profesion;
+        $modelPhoneNumber->mobile_2                 = $modelMassiveCallPhoneNumber->mobile_2;
+        $modelPhoneNumber->beneficio_number         = $modelMassiveCallPhoneNumber->beneficio_number;
+        $modelPhoneNumber->quantidade_transacoes    = $modelMassiveCallPhoneNumber->quantidade_transacoes;
+        $modelPhoneNumber->inicio_beneficio         = $modelMassiveCallPhoneNumber->inicio_beneficio;
+        $modelPhoneNumber->beneficio_valor          = $modelMassiveCallPhoneNumber->beneficio_valor;
+        $modelPhoneNumber->banco                    = $modelMassiveCallPhoneNumber->banco;
+        $modelPhoneNumber->agencia                  = $modelMassiveCallPhoneNumber->agencia;
+        $modelPhoneNumber->conta                    = $modelMassiveCallPhoneNumber->conta;
+        $modelPhoneNumber->address_complement       = $modelMassiveCallPhoneNumber->address_complement;
+        $modelPhoneNumber->telefone_fixo1           = $modelMassiveCallPhoneNumber->telefone_fixo1;
+        $modelPhoneNumber->telefone_fixo2           = $modelMassiveCallPhoneNumber->telefone_fixo2;
+        $modelPhoneNumber->telefone_fixo3           = $modelMassiveCallPhoneNumber->telefone_fixo3;
+        $modelPhoneNumber->telefone_celular1        = $modelMassiveCallPhoneNumber->telefone_celular1;
+        $modelPhoneNumber->telefone_celular2        = $modelMassiveCallPhoneNumber->telefone_celular2;
+        $modelPhoneNumber->telefone_celular3        = $modelMassiveCallPhoneNumber->telefone_celular3;
+        $modelPhoneNumber->telefone_fixo_comercial1 = $modelMassiveCallPhoneNumber->telefone_fixo_comercial1;
+        $modelPhoneNumber->telefone_fixo_comercial2 = $modelMassiveCallPhoneNumber->telefone_fixo_comercial2;
+        $modelPhoneNumber->telefone_fixo_comercial3 = $modelMassiveCallPhoneNumber->telefone_fixo_comercial3;
+        $modelPhoneNumber->parente1                 = $modelMassiveCallPhoneNumber->parente1;
+        $modelPhoneNumber->fone_parente1            = $modelMassiveCallPhoneNumber->fone_parente1;
+        $modelPhoneNumber->parente2                 = $modelMassiveCallPhoneNumber->parente2;
+        $modelPhoneNumber->fone_parente2            = $modelMassiveCallPhoneNumber->fone_parente2;
+        $modelPhoneNumber->parente3                 = $modelMassiveCallPhoneNumber->parente3;
+        $modelPhoneNumber->fone_parente3            = $modelMassiveCallPhoneNumber->fone_parente3;
+        $modelPhoneNumber->vizinho1                 = $modelMassiveCallPhoneNumber->vizinho1;
+        $modelPhoneNumber->telefone_vizinho1        = $modelMassiveCallPhoneNumber->telefone_vizinho1;
+        $modelPhoneNumber->vizinho2                 = $modelMassiveCallPhoneNumber->vizinho2;
+        $modelPhoneNumber->telefone_vizinho2        = $modelMassiveCallPhoneNumber->telefone_vizinho2;
+        $modelPhoneNumber->vizinho3                 = $modelMassiveCallPhoneNumber->vizinho3;
+        $modelPhoneNumber->telefone_vizinho3        = $modelMassiveCallPhoneNumber->telefone_vizinho3;
+        $modelPhoneNumber->email2                   = $modelMassiveCallPhoneNumber->email2;
+        $modelPhoneNumber->email3                   = $modelMassiveCallPhoneNumber->email3;
+
+        try {
+            $modelPhoneNumber->save();
+        } catch (Exception $e) {
+            $agi->verbose(print_r($e, true));
+        }
+        $agi->set_variable("PHONENUMBER_ID", $modelPhoneNumber->id);
+        $agi->set_variable("IDPHONEBOOK", $modelCampaignPhonebook->id_phonebook);
+
+        $agi->verbose('=========================== MASSIVE CALL ADD number ' . $modelMassiveCallPhoneNumber->number . ' to campaign=' . $modelCampaign->id_campaign . ' added id_phonenumber=' . $modelPhoneNumber->id, 5);
 
         $agi->execute("Queue", $modelCampainForward->name . ',,,,60,/var/www/html/callcenter/agi.php');
-
         //$Calc->updateSystem($MAGNUS, $agi, $MAGNUS->dnid, $terminatecauseid);
     }
 }

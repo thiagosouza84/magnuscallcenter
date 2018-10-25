@@ -32,13 +32,16 @@ class PredictiveAgi
         $modelCampaign = Campaign::model()->findByPk((int) $agi->get_variable("CAMPAIGN_ID", true));
         $agi->verbose("[CAMPAIGN NAME " . $modelCampaign->name . " " . $MAGNUS->uniqueid, 20);
 
-        $modelPredictive           = new Predictive();
-        $modelPredictive->number   = $agi->get_variable("PHONENUMBER_ID", true);
-        $modelPredictive->uniqueid = $MAGNUS->uniqueid;
-        $modelPredictive->save();
-
-        $startTime = time();
-        $callerID  = $agi->get_variable("CALLED", true);
+        if ($agi->get_variable("STARTCALL", true) > 0) {
+            $startTime = $agi->get_variable("STARTCALL", true);
+        } else {
+            $modelPredictive           = new Predictive();
+            $modelPredictive->number   = $agi->get_variable("PHONENUMBER_ID", true);
+            $modelPredictive->uniqueid = $MAGNUS->uniqueid;
+            $modelPredictive->save();
+            $startTime = time();
+        }
+        $callerID = $agi->get_variable("CALLED", true);
         $agi->set_callerid($callerID);
         $agi->set_variable("CALLERID(num)", $callerID);
         $agi->set_variable("CALLERID(all)", "$callerID < >");

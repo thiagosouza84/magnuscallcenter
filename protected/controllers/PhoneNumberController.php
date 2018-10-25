@@ -131,7 +131,7 @@ class PhoneNumberController extends BaseController
 
         //se o operador tiver auto_load_phonenumber = 1, retornar true.
         $modelUser = User::model()->find("auto_load_phonenumber = 1 AND id = :id_user", array(':id_user' => Yii::app()->session['id_user']));
-        if ($modelUser) {
+        if (count($modelUser)) {
             $modelUser->auto_load_phonenumber = 0;
             $modelUser->save();
 
@@ -157,14 +157,12 @@ class PhoneNumberController extends BaseController
                     echo $url;
 
                 } else {
-                    echo 'true';
+                    echo '1';
                 }
             } else {
-                echo 'true';
+                echo '1';
             }
 
-        } else {
-            echo 'true';
         }
 
     }
