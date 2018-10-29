@@ -271,7 +271,7 @@ class PredictiveCommand extends ConsoleCommand
                 $datebackcall = date('Y-m-d H:i', mktime(date('H'), date('i') - 10, date('s'), date('m'), date('d'), date('Y')));
 
                 $criteria = new CDbCriteria();
-                $criteria->addCondition('try < 4 AND id_phonebook IN ( SELECT id_phonebook FROM pkg_campaign_phonebook WHERE id_campaign = :key1 ) AND id_category = 1 OR ( id_category = 2 AND datebackcall BETWEEN :key AND NOW())');
+                $criteria->addCondition('(number > 0 OR number_home > 0 OR number_office > 0 OR mobile > 0) AND try < 4 AND id_phonebook IN ( SELECT id_phonebook FROM pkg_campaign_phonebook WHERE id_campaign = :key1 ) AND id_category = 1 OR ( id_category = 2 AND datebackcall BETWEEN :key AND NOW())');
                 $criteria->params[':key']  = $datebackcall;
                 $criteria->params[':key1'] = $modelCampaign[$i]->id;
                 $criteria->order           = 'datebackcall DESC';
