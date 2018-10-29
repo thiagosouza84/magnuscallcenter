@@ -128,33 +128,43 @@ class PhoneNumberController extends BaseController
     }
     public function actionAutoLoadPhoneNumber()
     {
-
         //se o operador tiver auto_load_phonenumber = 1, retornar true.
         $modelUser = User::model()->find("auto_load_phonenumber = 1 AND id = :id_user", array(':id_user' => Yii::app()->session['id_user']));
         if (count($modelUser)) {
             $modelUser->auto_load_phonenumber = 0;
             $modelUser->save();
-
             if (strlen(Yii::app()->session['open_url_when_answer_call']) > 10) {
                 //example
                 //http://google.com?id=%dni%&numero=%number%&magnus=1&name=%name%
                 if ($modelUser->id_current_phonenumber > 0) {
+
                     $url = Yii::app()->session['open_url_when_answer_call'];
 
                     if (preg_match('/\%/', $url)) {
                         $modelPhoneNumber = $this->abstractModel->findByPk($modelUser->id_current_phonenumber);
-
-                        $parts = parse_url($url);
+                        $parts            = parse_url($url);
                         parse_str($parts['query'], $query);
                         foreach ($query as $key => $value) {
 
+                            if ($key == 'background') {
+                                $background = true;
+                                continue;
+                            } elseif (preg_match('/\%sipaccount\%/', $value)) {
+                                $url = preg_replace('/%sipaccount%/', Yii::app()->session['username'], $url);
+                                continue;
+                            }
                             if (preg_match('/\%/', $value)) {
                                 $value = preg_replace('/\%/', '', $value);
                                 $url   = preg_replace('/%' . $value . '%/', urlencode($modelPhoneNumber->{$value}), $url);
                             }
                         }
                     }
-                    echo $url;
+
+                    if (isset($background) && $background == 1) {
+                        file_get_contents($url);
+                    } else {
+                        echo $url;
+                    }
 
                 } else {
                     echo '1';
@@ -164,7 +174,6 @@ class PhoneNumberController extends BaseController
             }
 
         }
-
     }
 
     public function readSetOrder($sort)
