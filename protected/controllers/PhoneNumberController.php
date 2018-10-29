@@ -389,7 +389,11 @@ class PhoneNumberController extends BaseController
         foreach ($this->paramsFilter as $key => $value) {
             $command->bindValue(":$key", $value, PDO::PARAM_STR);
         }
-        $categorias = $command->execute();
+
+        $command->execute();
+
+        $sql = "UPDATE pkg_phonenumber SET status = 1, id_category = 1, try = 0, id_user = NULL WHERE id_phonebook = " . $id_phonebook;
+        Yii::app()->db->createCommand($sql)->execute();
 
         echo json_encode(array(
             $this->nameSuccess => $this->success,

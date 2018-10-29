@@ -53,12 +53,10 @@ class PredictiveAgi
 
         if ($MAGNUS->config['agi-conf1']['amd'] == 1) {
             $amd_status = $agi->get_variable("AMDSTATUS", true);
-            if (!preg_match("/HUMAN/", $amd_status)) {
+            if (preg_match("/MACHINE/", $amd_status)) {
                 $agi->verbose(date("Y-m-d H:i:s") . " => " . $MAGNUS->dnid . ': amd_status ' . $amd_status . ", hangup call", 5);
                 $agi->hangup();
                 exit;
-            } else {
-                $agi->verbose(date("Y-m-d H:i:s") . " => " . $MAGNUS->dnid . ': amd_status ' . $amd_status . ", send call to agent\n", 5);
             }
         }
         //calcula o tempo que gastou para atender o numero
