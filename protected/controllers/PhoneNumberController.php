@@ -461,7 +461,11 @@ class PhoneNumberController extends BaseController
             }
 
             $sql = "DELETE FROM pkg_phonenumber WHERE id IN (" . substr($ids, 0, -1) . ")";
-            Yii::app()->db->createCommand($sql)->execute();
+            try {
+                Yii::app()->db->createCommand($sql)->execute();
+            } catch (Exception $e) {
+
+            }
         }
         return;
     }

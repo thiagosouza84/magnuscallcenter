@@ -33,7 +33,9 @@ class CSVInterpreter
         }
 
         if (!preg_match("/$delimiter/", $line1)) {
-            $this->addError(Yii::t('yii', 'ERROR: CSV delimiter'));
+            if (preg_match("/,|;/", $line1)) {
+                $this->addError(Yii::t('yii', 'ERROR: CSV delimiter'));
+            }
         }
 
         $this->filename  = $filename;
