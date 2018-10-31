@@ -447,16 +447,21 @@ class PhoneNumberController extends BaseController
             $this->nameSuccess => true,
             $this->nameMsg     => 'Números atualizados com sucesso',
         ));
-
     }
 
     public function afterImportFromCsv($values)
     {
-        if ($values['allowDuplicate'] == 0) {
+        if ($values['allowDuplicate'] == 1) {
             //remove duplicates in the phonebook
-            $sql = "DELETE n1 FROM pkg_phonenumber n1, pkg_phonenumber n2 WHERE n1.id_phonebook = " . $values['id_phonebook'] . " AND n1.id > n2.id AND n1.number = n2.number";
-            Yii::app()->db->createCommand($sql)->execute();
+            $sql    = "SELECT id FROM pkg_phonenumber WHERE id_phonebook = " . $values['id_phonebook'] . " GROUP BY number HAVING  COUNT(number) > 1";
+            $result = Yii::app()->db->createCommand($sql)->queryAll();
+            $ids    = '';
+            foreach ($result as $key => $value) {
+                $ids .= $value['id'] . ',';
+            }
 
+            $sql = "DELETE FROM pkg_phonenumber WHERE id IN (" . substr($ids, 0, -1) . ")";
+            Yii::app()->db->createCommand($sql)->execute();
         }
         return;
     }

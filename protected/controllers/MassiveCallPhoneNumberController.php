@@ -27,29 +27,29 @@ class MassiveCallPhoneNumberController extends BaseController
 
         parent::init();
     }
-
-    public function actionImportFromCsv()
+    public function importCsvSetAdditionalParams()
     {
-        ini_set("memory_limit", "1024M");
-        ini_set("upload_max_filesize", "25M");
-        ini_set("max_execution_time", "190");
-
-        $interpreter      = new CSVInterpreter($_FILES['file']['tmp_name']);
-        $array            = $interpreter->toArray();
-        $additionalParams = [['key' => 'id_massive_call_phonebook', 'value' => $_POST['id_massive_call_phonebook']]];
-        $errors           = array();
-        if ($array) {
-            $recorder = new CSVActiveRecorder($array, 'MassiveCallPhoneNumber', $additionalParams);
-            if ($recorder->save());
-            $errors = $recorder->getErrors();
-
-        } else {
-            $errors = $interpreter->getErrors();
-        }
-
-        echo json_encode(array(
-            $this->nameSuccess => count($errors) > 0 ? false : true,
-            $this->nameMsg     => count($errors) > 0 ? implode(',', $errors) : $this->msgSuccess,
-        ));
+        $values = $this->getAttributesRequest();
+        return [
+            ['key' => 'id_massive_call_phonebook', 'value' => $values['id_massive_call_phonebook']],
+        ];
     }
+
+    public function afterImportFromCsv($values)
+    {
+        if ($values['allowDuplicate'] == 1) {
+            //remove duplicates in the phonebook
+            $sql    = "SELECT id FROM pkg_massive_call_phonenumber WHERE id_massive_call_phonebook = " . $values['id_massive_call_phonebook'] . " GROUP BY number HAVING  COUNT(number) > 1";
+            $result = Yii::app()->db->createCommand($sql)->queryAll();
+            $ids    = '';
+            foreach ($result as $key => $value) {
+                $ids .= $value['id'] . ',';
+            }
+
+            $sql = "DELETE FROM pkg_massive_call_phonenumber WHERE id IN (" . substr($ids, 0, -1) . ")";
+            Yii::app()->db->createCommand($sql)->execute();
+        }
+        return;
+    }
+
 }
