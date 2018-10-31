@@ -18,8 +18,8 @@ echo
 
 sleep 2
 
-if [[ -e /var/www/html/callcenter/protected/commands/update2.sh ]]; then
-	/var/www/html/callcenter/protected/commands/update2.sh
+if [[ -e /var/www/html/mbilling/protected/commands/update2.sh ]]; then
+	/var/www/html/mbilling/protected/commands/update2.sh
 	exit;
 fi
 
@@ -51,3 +51,7 @@ chmod -R 750 /var/www/html/callcenter/resources/sounds
 chmod -R 750 /var/www/html/callcenter/resources/images
 mkdir -p /var/www/tmpmagnus
 chmod -R 777 /var/www/tmpmagnus
+
+if [[ -e /var/www/html/mbilling/protected/commands/update3.sh ]]; then
+	/var/www/html/mbilling/protected/commands/update3.sh
+fi
