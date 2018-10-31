@@ -45,7 +45,10 @@ class MassiveCallCommand extends ConsoleCommand
             if (DEBUG >= 1) {
                 echo "SEARCH NUMBER IN CAMPAIGN " . $campaign->name . "\n";
             }
-
+            if ($campaign->frequency == 0) {
+                echo "Call per minutes =0\n";
+                continue;
+            }
             //calculo de chamadas por segundos.
 
             if ($campaign->frequency < 60) {
