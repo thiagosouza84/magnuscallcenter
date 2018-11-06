@@ -131,8 +131,10 @@ class PhoneNumberController extends BaseController
         //se o operador tiver auto_load_phonenumber = 1, retornar true.
         $modelUser = User::model()->find("auto_load_phonenumber = 1 AND id = :id_user", array(':id_user' => Yii::app()->session['id_user']));
         if (count($modelUser)) {
-            $modelUser->auto_load_phonenumber = 0;
-            $modelUser->save();
+            if (strlen(Yii::app()->session['open_url_when_answer_call'] < 1)) {
+                $modelCampaign                                   = Campaign::model()->findByPk($modelUser->id_campaign);
+                Yii::app()->session['open_url_when_answer_call'] = $modelCampaign->open_url_when_answer_call;
+            }
             if (strlen(Yii::app()->session['open_url_when_answer_call']) > 10) {
                 //example
                 //http://google.com?id=%dni%&numero=%number%&magnus=1&name=%name%
@@ -172,7 +174,8 @@ class PhoneNumberController extends BaseController
             } else {
                 echo '1';
             }
-
+            $modelUser->auto_load_phonenumber = 0;
+            $modelUser->save();
         }
     }
 

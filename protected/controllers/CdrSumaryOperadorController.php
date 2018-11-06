@@ -149,8 +149,14 @@ class CdrSumaryOperadorController extends BaseController
             6300 / 3600 =
             5 / 1.75 = 2,86
              */
+            if ($attributes[$i]['efectivastotal'] == 0) {
+                $ratio = 0;
+            } else if ($attributes[$i]['total_time'] == 0) {
+                $ratio = $attributes[$i]['efectivastotal'] / (1 / 3600);
+            } else {
+                $ratio = $attributes[$i]['efectivastotal'] / ($attributes[$i]['total_time'] / 3600);
+            }
 
-            $ratio                   = $attributes[$i]['efectivastotal'] == 0 ? 0 : $attributes[$i]['efectivastotal'] / ($attributes[$i]['total_time'] / 3600);
             $attributes[$i]['ratio'] = number_format($ratio, 2);
 
             //chamadas por hora
