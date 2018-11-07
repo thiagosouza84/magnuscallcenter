@@ -249,6 +249,29 @@ class UpdateMysqlCommand extends ConsoleCommand
             $this->executeDB($sql);
         }
 
+        if ($version == '3.1.2') {
+
+            $sql = "ALTER TABLE `pkg_massive_call_phonenumber` ADD `res_dtmf` INT(11) NULL DEFAULT NULL AFTER `timeCall`;";
+            $this->executeDB($sql);
+
+            $sql = "ALTER TABLE `pkg_massive_call_phonenumber` ADD `queue_status` VARCHAR(50) NULL DEFAULT NULL AFTER `res_dtmf`;";
+            $this->executeDB($sql);
+
+            $sql = "ALTER TABLE `pkg_massive_call_phonenumber` ADD `id_user` INT(11) NULL DEFAULT NULL AFTER `id`;";
+            $this->executeDB($sql);
+
+            $sql = "INSERT INTO pkg_module VALUES (NULL, 't(''Massive Call Report'')', 'massivecallreport', 'prefixs', 5)";
+            $this->executeDB($sql);
+            $idServiceModule = Yii::app()->db->lastInsertID;
+
+            $sql = "INSERT INTO pkg_group_module VALUES ((SELECT id FROM pkg_group_user WHERE id_user_type = 1 LIMIT 1), '" . $idServiceModule . "', 'r', '1', '1', '1');";
+            $this->executeDB($sql);
+
+            $version = '3.1.3';
+            $sql     = "UPDATE pkg_configuration SET config_value = '" . $version . "' WHERE config_key = 'version' ";
+            $this->executeDB($sql);
+        }
+
     }
 
     private function executeDB($sql)

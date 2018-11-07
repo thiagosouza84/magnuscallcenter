@@ -41,7 +41,7 @@ class MassiveCallPhoneNumber extends Model
     {
         return array(
             array('number', 'required'),
-            array('id_massive_call_phonebook, edad, status', 'numerical', 'integerOnly' => true),
+            array('id_massive_call_phonebook, edad, status, res_dtmf, id_user', 'numerical', 'integerOnly' => true),
             array('city, dni', 'length', 'max' => 30),
             array('name,beneficio_number,quantidade_transacoes,inicio_beneficio,beneficio_valor,
                     banco,agencia,conta,address_complement,telefone_fixo1,
@@ -51,7 +51,7 @@ class MassiveCallPhoneNumber extends Model
                     vizinho1,telefone_vizinho1,vizinho2,telefone_vizinho2,
                     vizinho3,telefone_vizinho3', 'length', 'max' => 60),
             array('number, state, country, mobile, number_home, number_office, zip_code', 'length', 'max' => 30),
-            array('profesion, email,email2,email3,address, creationdate', 'length', 'max' => 50),
+            array('profesion, email,email2,email3,address, creationdate,queue_status', 'length', 'max' => 50),
             array('sexo', 'length', 'max' => 10),
             array('info, company, birth_date, type_user, mobile_2', 'length', 'max' => 100),
         );
@@ -63,6 +63,7 @@ class MassiveCallPhoneNumber extends Model
     public function relations()
     {
         return array(
+            'idUser'                 => array(self::BELONGS_TO, 'User', 'id_user'),
             'idMassiveCallPhonebook' => array(self::BELONGS_TO, 'MassiveCallPhoneBook', 'id_massive_call_phonebook'),
         );
     }

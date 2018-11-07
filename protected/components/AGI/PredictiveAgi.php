@@ -71,19 +71,21 @@ class PredictiveAgi
 
         $agi->verbose(date("Y-m-d H:i:s") . " => $MAGNUS->dnid, enviado para queue " . $modelCampaign->name, 10);
 
-        $agi->execute("Queue", $modelCampaign->name . ',,,,60,/var/www/html/callcenter/agi.php');
+        if ($agi->get_variable("MEMBERNAME", true)) {
+            $agi->execute("Queue", $modelCampaign->name . ',,,,60,/var/www/html/callcenter/agi.php');
 
-        if ($MAGNUS->agiconfig['record_call'] == 1 || $MAGNUS->record_call == 1) {
-            $myres = $agi->execute("StopMixMonitor");
-            $agi->verbose("EXEC StopMixMonitor (" . $MAGNUS->uniqueid . ")", 5);
-            if (file_exists("" . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY') . "/" . $MAGNUS->dnid . "." . $MAGNUS->uniqueid . ".gsm")) {
-                if (!is_dir("" . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY'))) {
-                    exec("mkdir " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY'));
+            if ($MAGNUS->agiconfig['record_call'] == 1 || $MAGNUS->record_call == 1) {
+                $myres = $agi->execute("StopMixMonitor");
+                $agi->verbose("EXEC StopMixMonitor (" . $MAGNUS->uniqueid . ")", 5);
+                if (file_exists("" . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY') . "/" . $MAGNUS->dnid . "." . $MAGNUS->uniqueid . ".gsm")) {
+                    if (!is_dir("" . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY'))) {
+                        exec("mkdir " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY'));
+                    }
+                    $agi->verbose("mv " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY') . "/" . $MAGNUS->dnid . "." . $MAGNUS->uniqueid . ".gsm " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY') . "/", 15);
+
+                    exec("mv " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY') . "/" . $MAGNUS->dnid . "." . $MAGNUS->uniqueid . ".gsm " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY') . "/");
+
                 }
-                $agi->verbose("mv " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY') . "/" . $MAGNUS->dnid . "." . $MAGNUS->uniqueid . ".gsm " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY') . "/", 15);
-
-                exec("mv " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY') . "/" . $MAGNUS->dnid . "." . $MAGNUS->uniqueid . ".gsm " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY') . "/");
-
             }
         }
 

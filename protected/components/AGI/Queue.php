@@ -117,6 +117,11 @@ class Queue
             }
         }
 
+        $linha = exec(" egrep $MAGNUS->uniqueid /var/log/asterisk/queue_log | tail -1");
+        $linha = explode('|', $linha);
+
+        $agi->verbose(print_r($linha, true), 1);
+
         $agi->verbose(date("Y-m-d H:i:s") . " => $MAGNUS->dnid, " . $MAGNUS->uniqueid . " DELIGOU A CHAMADAS teste teste", 1);
 
         $endTime = strtotime("now");
@@ -237,10 +242,17 @@ class Queue
         }
         $agi->set_variable("PHONENUMBER_ID", $modelPhoneNumber->id);
         $agi->set_variable("IDPHONEBOOK", $modelCampaignPhonebook->id_phonebook);
+        $agi->set_variable("IDPHONENUMBERMASSIVE", $modelMassiveCallPhoneNumber->id);
 
-        $agi->verbose('=========================== MASSIVE CALL ADD number ' . $modelMassiveCallPhoneNumber->number . ' to campaign=' . $modelCampaign->id_campaign . ' added id_phonenumber=' . $modelPhoneNumber->id, 5);
+        $agi->verbose('=========================== MASSIVE CALL ADD number ' . $modelMassiveCallPhoneNumber->number . ' to campaign=' . $modelCampaign->id_campaign . ' added id_phonenumber=' . $modelPhoneNumber->id, 1);
 
         $agi->execute("Queue", $modelCampainForward->name . ',,,,60,/var/www/html/callcenter/agi.php');
-        //$Calc->updateSystem($MAGNUS, $agi, $MAGNUS->dnid, $terminatecauseid);
+
+        $linha = exec(" egrep $MAGNUS->uniqueid /var/log/asterisk/queue_log | tail -1");
+        $linha = explode('|', $linha);
+
+        $agi->verbose(print_r($linha, true), 1);
+
+        MassiveCallPhoneNumber::model()->updateByPk($modelMassiveCallPhoneNumber->id, array('queue_status' => $linha[4]));
     }
 }

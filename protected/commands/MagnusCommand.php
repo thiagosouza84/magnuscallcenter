@@ -55,6 +55,12 @@ class MagnusCommand extends CConsoleCommand
             $agi->verbose($sql, 25);
             Yii::app()->db->createCommand($sql)->execute();
 
+            if ($agi->get_variable("IDPHONENUMBERMASSIVE", true)) {
+                $sql = "UPDATE pkg_massive_call_phonenumber SET  queue_status = 'ANSWERED', id_user = (SELECT id FROM pkg_user WHERE username = '" . $operator . "') WHERE id = " . $agi->get_variable("IDPHONENUMBERMASSIVE", true);
+                $agi->verbose($sql, 1);
+                Yii::app()->db->createCommand($sql)->execute();
+            }
+
             $modelUser                         = User::model()->find("username = :operator", array(':operator' => $operator));
             $modelUser->auto_load_phonenumber  = 1;
             $modelUser->id_current_phonenumber = $agi->get_variable("PHONENUMBER_ID", true);

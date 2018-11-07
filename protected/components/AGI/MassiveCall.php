@@ -34,9 +34,7 @@ class MassiveCall
         $id_phonenumber = $agi->get_variable("PHONENUMBER_ID", true);
         $id_campaign    = $agi->get_variable("CAMPAIGN_ID", true);
 
-        $agi->verbose('MASSIVE CALL' . $id_campaign, 5);
-
-        MassiveCallPhoneNumber::model()->updateByPk($id_phonenumber, array('status' => 3));
+        $agi->verbose('MASSIVE CALL' . $id_campaign . ' - ' . $MAGNUS->dnid, 1);
 
         $modelCampaign = MassiveCallCampaign::model()->findByPk((int) $id_campaign);
 
@@ -71,11 +69,14 @@ class MassiveCall
             $agi->verbose('CAMPAIN SEM AUDIO, ENVIA DIRETO PARA ' . $res_dtmf['result']);
         }
 
-        $agi->verbose("have Forward number $forward_number");
+        $agi->verbose("have Forward number $forward_number", 5);
+
+        MassiveCallPhoneNumber::model()->updateByPk($id_phonenumber, array('status' => 3, 'res_dtmf' => $res_dtmf['result']));
 
         $agi->set_variable("CALLERID(num)", $destination);
 
         if ($res_dtmf['result'] == $modelCampaign->forward_number) {
+            $agi->verbose("cleinte tranferido para queue ");
             Queue::queueMassivaCall($agi, $MAGNUS, $Calc, $modelCampaign, $id_phonenumber);
         } else {
             $MANGUS->hangup($agi);
