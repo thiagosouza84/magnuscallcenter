@@ -9,7 +9,6 @@
 class CategoryController extends BaseController
 {
     public $attributeOrder = 't.id';
-    public $defaultFilter  = 'id > 0';
 
     public function init()
     {
@@ -21,7 +20,7 @@ class CategoryController extends BaseController
 
     public function extraFilterCustom($filter)
     {
-        $filter = !preg_match("/status/", $filter) ? ' status = 1' : false;
+        $filter = !preg_match("/status/", $filter) ? ' status = 1 AND id > 0' : 'id > 0';
 
         if (Yii::app()->session['isOperator']) {
             $filter = $this->extraFilterCustomOperator($filter);

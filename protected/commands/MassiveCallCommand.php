@@ -169,8 +169,9 @@ class MassiveCallCommand extends ConsoleCommand
             $criteria->addInCondition('id', $ids);
             MassiveCallPhoneNumber::model()->updateAll(
                 array(
-                    'status' => '2',
-                    'try'    => new CDbExpression('try + 1'),
+                    'status'    => '2',
+                    'try'       => new CDbExpression('try + 1'),
+                    'dial_date' => date('Y-m-d H:i:s'),
                 ),
                 $criteria
             );

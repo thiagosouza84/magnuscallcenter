@@ -51,7 +51,7 @@ class MassiveCallPhoneNumber extends Model
                     vizinho1,telefone_vizinho1,vizinho2,telefone_vizinho2,
                     vizinho3,telefone_vizinho3', 'length', 'max' => 60),
             array('number, state, country, mobile, number_home, number_office, zip_code', 'length', 'max' => 30),
-            array('profesion, email,email2,email3,address, creationdate,queue_status', 'length', 'max' => 50),
+            array('profesion, email,email2,email3,address, creationdate,queue_status, dial_date', 'length', 'max' => 50),
             array('sexo', 'length', 'max' => 10),
             array('info, company, birth_date, type_user, mobile_2', 'length', 'max' => 100),
         );

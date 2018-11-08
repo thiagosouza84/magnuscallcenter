@@ -301,6 +301,16 @@ class UpdateMysqlCommand extends ConsoleCommand
             exec('echo "" >> /etc/asterisk/extensions.ael');
         }
 
+        if ($version == '3.1.4') {
+
+            $sql = "ALTER TABLE `pkg_massive_call_phonenumber` ADD `dial_date` DATETIME NULL DEFAULT NULL AFTER `creationdate`;";
+            $this->executeDB($sql);
+
+            $version = '3.1.5';
+            $sql     = "UPDATE pkg_configuration SET config_value = '" . $version . "' WHERE config_key = 'version' ";
+            $this->executeDB($sql);
+        }
+
     }
 
     private function executeDB($sql)
