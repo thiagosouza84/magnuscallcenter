@@ -1,4 +1,7 @@
 Locale.load({
+    'Massive Call Report': 'Relatório Torpedo',
+    'res_dtmf': 'Opção Digitada',
+    'queue_status': 'Status da Fila',
     'Complement': 'Complemento',
     'neighborhood': 'Bairro',
     'The columns are miscofigurated': 'Existe alguma coluna na 1º linha que não podemos entender',
