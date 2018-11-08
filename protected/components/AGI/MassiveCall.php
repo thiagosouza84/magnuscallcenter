@@ -70,7 +70,7 @@ class MassiveCall
         }
 
         $agi->verbose("have Forward number $forward_number", 5);
-
+        $res_dtmf['result'] = $res_dtmf['result'] > 0 ? $res_dtmf['result'] : '';
         MassiveCallPhoneNumber::model()->updateByPk($id_phonenumber, array('status' => 3, 'res_dtmf' => $res_dtmf['result'], 'queue_status' => 'CLIENT_ANSWER_CALL'));
 
         $agi->set_variable("CALLERID(num)", $destination);
