@@ -25,14 +25,10 @@ class PredictiveAgi
         $agi->verbose("[Type Call Predictive]", 3);
         $agi->verbose(date("Y-m-d H:i:s") . " => $MAGNUS->dnid, Cliente Atendeu a chamada, campanha " . $agi->get_variable("CAMPAIGN_ID", true), 2);
 
-        if ($MAGNUS->config['agi-conf1']['amd'] == 1) {
-            $agi->execute("AMD");
-        }
-
         $modelCampaign = Campaign::model()->findByPk((int) $agi->get_variable("CAMPAIGN_ID", true));
         $agi->verbose("[CAMPAIGN NAME " . $modelCampaign->name . " " . $MAGNUS->uniqueid, 20);
 
-        if ($agi->get_variable("STARTCALL", true) > 0) {
+        if ($agi->get_variable("MASSIVE_CALL", true) > 0) {
             $startTime = $agi->get_variable("STARTCALL", true);
         } else {
             $modelPredictive           = new Predictive();
@@ -48,56 +44,64 @@ class PredictiveAgi
 
         $agi->verbose('Predictive - Send call to Campaign ' . $modelCampaign->name, 5);
 
-        //SET uniqueid para ser atualizado a tabela pkg_predictive quando a ligação for atendida
-        $agi->set_variable("UNIQUEID", $MAGNUS->uniqueid);
-
-        if ($MAGNUS->config['agi-conf1']['amd'] == 1) {
-            $amd_status = $agi->get_variable("AMDSTATUS", true);
-            if (preg_match("/MACHINE/", $amd_status)) {
-                $agi->verbose(date("Y-m-d H:i:s") . " => " . $MAGNUS->dnid . ': amd_status ' . $amd_status . ", hangup call", 5);
-                $agi->hangup();
-                exit;
-            }
-        }
         //calcula o tempo que gastou para atender o numero
         $ringing_time = $startTime - $agi->get_variable("STARTCALL", true);
         $agi->verbose($agi->get_variable("ALEARORIO", true), 25);
 
-        PredictiveGen::model()->updateAll(
-            array('ringing_time' => $ringing_time),
-            'uniqueID = :key',
-            array(':key' => $agi->get_variable("ALEARORIO", true))
-        );
+        //SET uniqueid para ser atualizado a tabela pkg_predictive quando a ligação for atendida
+        $agi->set_variable("UNIQUEID", $MAGNUS->uniqueid);
 
-        $agi->verbose(date("Y-m-d H:i:s") . " => $MAGNUS->dnid, enviado para queue " . $modelCampaign->name, 10);
+        if ($MAGNUS->config['agi-conf1']['amd'] == 1 && preg_match("/MACHINE/", $agi->get_variable("AMDSTATUS", true))) {
 
-        if ($agi->get_variable("MEMBERNAME", true)) {
-            $agi->execute("Queue", $modelCampaign->name . ',,,,60,/var/www/html/callcenter/agi.php');
+            $amd_status = $agi->get_variable("AMDSTATUS", true);
+            $agi->verbose(date("Y-m-d H:i:s") . " => " . $MAGNUS->dnid . ': amd_status ' . $amd_status . ", hangup call", 5);
 
-            if ($MAGNUS->agiconfig['record_call'] == 1 || $MAGNUS->record_call == 1) {
-                $myres = $agi->execute("StopMixMonitor");
-                $agi->verbose("EXEC StopMixMonitor (" . $MAGNUS->uniqueid . ")", 5);
-                if (file_exists("" . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY') . "/" . $MAGNUS->dnid . "." . $MAGNUS->uniqueid . ".gsm")) {
-                    if (!is_dir("" . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY'))) {
-                        exec("mkdir " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY'));
+            PredictiveGen::model()->updateAll(
+                array('ringing_time' => $ringing_time, 'amd' => 1),
+                'uniqueID = :key',
+                array(':key' => $agi->get_variable("ALEARORIO", true))
+            );
+
+            //pega o usuario que atendeu a chamada
+            $modelUser               = User::model()->find('id_group = 1');
+            $MAGNUS->forceIdCaterory = '-2';
+        } else {
+            PredictiveGen::model()->updateAll(
+                array('ringing_time' => $ringing_time),
+                'uniqueID = :key',
+                array(':key' => $agi->get_variable("ALEARORIO", true))
+            );
+
+            $agi->verbose(date("Y-m-d H:i:s") . " => $MAGNUS->dnid, enviado para queue " . $modelCampaign->name, 10);
+
+            if (!$agi->get_variable("MEMBERNAME", true)) {
+                $agi->execute("Queue", $modelCampaign->name . ',,,,60,/var/www/html/callcenter/agi.php');
+
+                if ($MAGNUS->agiconfig['record_call'] == 1 || $MAGNUS->record_call == 1) {
+                    $myres = $agi->execute("StopMixMonitor");
+                    $agi->verbose("EXEC StopMixMonitor (" . $MAGNUS->uniqueid . ")", 5);
+                    if (file_exists("" . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY') . "/" . $MAGNUS->dnid . "." . $MAGNUS->uniqueid . ".gsm")) {
+                        if (!is_dir("" . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY'))) {
+                            exec("mkdir " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY'));
+                        }
+                        $agi->verbose("mv " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY') . "/" . $MAGNUS->dnid . "." . $MAGNUS->uniqueid . ".gsm " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY') . "/", 15);
+
+                        exec("mv " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY') . "/" . $MAGNUS->dnid . "." . $MAGNUS->uniqueid . ".gsm " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY') . "/");
+
                     }
-                    $agi->verbose("mv " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY') . "/" . $MAGNUS->dnid . "." . $MAGNUS->uniqueid . ".gsm " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY') . "/", 15);
-
-                    exec("mv " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY') . "/" . $MAGNUS->dnid . "." . $MAGNUS->uniqueid . ".gsm " . $MAGNUS->config['global']['record_patch'] . "/" . date('dmY') . "/");
-
                 }
             }
-        }
 
-        $agi->verbose(date("Y-m-d H:i:s") . " => $MAGNUS->dnid, " . $MAGNUS->uniqueid . " DELIGOU A CHAMADAS", 15);
+            $agi->verbose(date("Y-m-d H:i:s") . " => $MAGNUS->dnid, " . $MAGNUS->uniqueid . " DELIGOU A CHAMADAS", 15);
+            //pega o usuario que atendeu a chamada
+            $modelUser = User::model()->find('username = (SELECT operador FROM pkg_predictive WHERE uniqueid = :key)',
+                array(':key' => $MAGNUS->uniqueid));
+
+        }
 
         $endTime = time();
 
         $Calc->answeredtime = $Calc->real_answeredtime = $endTime - $startTime;
-
-        //pega o usuario que atendeu a chamada
-        $modelUser = User::model()->find('username = (SELECT operador FROM pkg_predictive WHERE uniqueid = :key)',
-            array(':key' => $MAGNUS->uniqueid));
 
         $agi->verbose('id_user ' . $modelUser->id, 25);
 

@@ -28,7 +28,7 @@ class PredictiveGen extends Model
     public function rules()
     {
         return array(
-            array('id_phonebook, ringing_time', 'numerical', 'integerOnly' => true),
+            array('id_phonebook, ringing_time,amd', 'numerical', 'integerOnly' => true),
             array('uniqueID', 'length', 'max' => 30),
             array('date', 'safe'),
         );

@@ -378,7 +378,7 @@ class PredictiveCommand extends ConsoleCommand
                     $call .= "MaxRetries: 0\n";
                     $call .= "RetryTime: 1\n";
                     $call .= "WaitTime: 45\n";
-                    $call .= "Context: magnuscallcenter\n";
+                    $call .= "Context: magnuscallcenterpredictive\n";
                     $call .= "Extension: " . $extension . "\n";
                     $call .= "Priority: 1\n";
                     $call .= "Set:CALLERID=" . $phone->number . "\n";
@@ -389,6 +389,7 @@ class PredictiveCommand extends ConsoleCommand
                     $call .= "Set:IDTRUNK=" . $phone->idPhonebook->id_trunk . "\n";
                     $call .= "Set:STARTCALL=" . time() . "\n";
                     $call .= "Set:ALEARORIO=" . $aleatorio . "\n";
+                    $call .= "Set:AMD=" . $this->config['agi-conf1']['amd'] . "\n";
 
                     $log = $this->debug >= 4 ? MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . $call) : null;
 

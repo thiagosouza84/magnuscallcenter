@@ -9,6 +9,7 @@
 class CategoryController extends BaseController
 {
     public $attributeOrder = 't.id';
+    public $defaultFilter  = 'id > 0';
 
     public function init()
     {

@@ -279,7 +279,20 @@ exten => s,1,AGI(magnus,queuemacro)
 
 " > /etc/asterisk/extensions_magnus.conf
 
-
+echo $'context magnuscallcenterpredictive {
+	_X. => {
+		Verbose(1,${AMD});
+		if ("${AMD}" == "1")
+		{
+		    Answer();
+		    Background(silence/1);
+			AMD();
+			Verbose(${AMDSTATUS});
+		}
+		AGI(/var/www/html/callcenter/agi.php);
+		Hangup();
+	}
+}' >> /etc/asterisk/extensions.ael
 
 echo '
 [general]

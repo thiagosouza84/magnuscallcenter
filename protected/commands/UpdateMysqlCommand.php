@@ -272,6 +272,35 @@ class UpdateMysqlCommand extends ConsoleCommand
             $this->executeDB($sql);
         }
 
+        if ($version == '3.1.3') {
+
+            $sql = "ALTER TABLE `pkg_predictive_gen` ADD `amd` TINYINT(1) NOT NULL DEFAULT '0' AFTER `ringing_time`;";
+            $this->executeDB($sql);
+
+            $sql = "INSERT INTO `callcenter`.`pkg_category` (`id`, `name`, `description`, `status`, `use_in_efetiva`, `color`, `type`) VALUES ('-2', 'AMD', NULL, '1', '0', '#ffffff', '1');";
+            $this->executeDB($sql);
+
+            $version = '3.1.4';
+            $sql     = "UPDATE pkg_configuration SET config_value = '" . $version . "' WHERE config_key = 'version' ";
+            $this->executeDB($sql);
+
+            exec('echo "" >> /etc/asterisk/extensions.ael');
+            exec('echo "context magnuscallcenterpredictive {" >> /etc/asterisk/extensions.ael');
+            exec('echo "    _X. => {" >> /etc/asterisk/extensions.ael');
+            exec('echo "        if (\"\${AMD}\"==\"1\")" >> /etc/asterisk/extensions.ael');
+            exec('echo "        {" >> /etc/asterisk/extensions.ael');
+            exec('echo "            Answer();" >> /etc/asterisk/extensions.ael');
+            exec('echo "            Background(silence/1);" >> /etc/asterisk/extensions.ael');
+            exec('echo "            AMD();" >> /etc/asterisk/extensions.ael');
+            exec('echo "            Verbose(\${AMDSTATUS});" >> /etc/asterisk/extensions.ael');
+            exec('echo "        }" >> /etc/asterisk/extensions.ael');
+            exec('echo "        AGI(/var/www/html/callcenter/agi.php);" >> /etc/asterisk/extensions.ael');
+            exec('echo "        Hangup();" >> /etc/asterisk/extensions.ael');
+            exec('echo "    }" >> /etc/asterisk/extensions.ael');
+            exec('echo "}" >> /etc/asterisk/extensions.ael');
+            exec('echo "" >> /etc/asterisk/extensions.ael');
+        }
+
     }
 
     private function executeDB($sql)

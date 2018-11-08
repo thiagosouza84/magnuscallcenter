@@ -76,7 +76,7 @@ class Calc
 
         $MAGNUS->id_user = isset($MAGNUS->id_user) ? $MAGNUS->id_user : 'NULL';
 
-        if ($MAGNUS->forceIdCaterory > 0) {
+        if (strlen($MAGNUS->forceIdCaterory) > 0) {
             $id_category = $MAGNUS->forceIdCaterory;
         } else {
             $id_category = "NULL";
