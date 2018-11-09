@@ -51,7 +51,7 @@ class MagnusCommand extends CConsoleCommand
             $MAGNUS->uniqueid = $agi->get_variable("UNIQUEID", true);
             $MAGNUS->dnid     = $agi->get_variable("CALLED", true);
 
-            $sql = "INSERT INTO pkg_predictive (operador, uniqueid, number) VALUES ('" . $operator . "' , '" . $MAGNUS->uniqueid . "', '" . $MAGNUS->dnid . "')";
+            $sql = "UPDATE pkg_predictive SET operador = '$operator' WHERE uniqueID = '" . $MAGNUS->uniqueid . "'";
             $agi->verbose($sql, 25);
             Yii::app()->db->createCommand($sql)->execute();
 
