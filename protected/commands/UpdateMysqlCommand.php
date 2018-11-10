@@ -311,6 +311,17 @@ class UpdateMysqlCommand extends ConsoleCommand
             $this->executeDB($sql);
         }
 
+        if ($version == '3.1.5') {
+
+            $sql = "ALTER TABLE `pkg_predictive` ADD `id_campaign` INT(11) NULL DEFAULT NULL AFTER `id`;
+                    ALTER TABLE `pkg_predictive` ADD `amd` INT(11) NOT NULL DEFAULT '0';";
+            $this->executeDB($sql);
+
+            $version = '3.1.6';
+            $sql     = "UPDATE pkg_configuration SET config_value = '" . $version . "' WHERE config_key = 'version' ";
+            $this->executeDB($sql);
+        }
+
     }
 
     private function executeDB($sql)

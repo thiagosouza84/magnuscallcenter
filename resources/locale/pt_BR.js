@@ -1,4 +1,6 @@
 Locale.load({
+    'Call lost': 'Perdidas',
+    'Mañana': 'Manha',
     'Massive Call Report': 'Relatório Torpedo',
     'res_dtmf': 'Opção Digitada',
     'queue_status': 'Status da Fila',

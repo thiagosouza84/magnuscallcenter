@@ -31,9 +31,13 @@ class PredictiveAgi
         if ($agi->get_variable("MASSIVE_CALL", true) > 0) {
             $startTime = $agi->get_variable("STARTCALL", true);
         } else {
-            $modelPredictive           = new Predictive();
-            $modelPredictive->number   = $agi->get_variable("PHONENUMBER_ID", true);
-            $modelPredictive->uniqueid = $MAGNUS->uniqueid;
+            $modelPredictive              = new Predictive();
+            $modelPredictive->id_campaign = $modelCampaign->id;
+            $modelPredictive->number      = $agi->get_variable("PHONENUMBER_ID", true);
+            $modelPredictive->uniqueid    = $MAGNUS->uniqueid;
+            if ($MAGNUS->config['agi-conf1']['amd'] == 1 && preg_match("/MACHINE/", $agi->get_variable("AMDSTATUS", true))) {
+                $modelPredictive->amd = 1;
+            }
             $modelPredictive->save();
             $startTime = time();
         }

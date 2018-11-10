@@ -113,7 +113,9 @@ class Campaign extends Model
             (SELECT count(*)  FROM `pkg_predictive_gen` WHERE `id_phonebook` IN ($id_campaign) AND ringing_time > 1) answered,
             count(*) error,
             (SELECT AVG( ringing_time ) FROM  `pkg_predictive_gen` WHERE `id_phonebook` IN ($id_campaign) AND ringing_time >0) ring_delay  ,
-            ((SELECT count(*)  FROM `pkg_predictive_gen` WHERE `id_phonebook` IN ($id_campaign) AND ringing_time > 1) * 100) / (SELECT count(*)  FROM `pkg_predictive_gen` WHERE `id_phonebook` IN ($id_campaign)) AS asr
+            ((SELECT count(*)  FROM `pkg_predictive_gen` WHERE `id_phonebook` IN ($id_campaign) AND ringing_time > 1) * 100) / (SELECT count(*)  FROM `pkg_predictive_gen` WHERE `id_phonebook` IN ($id_campaign)) AS asr,
+            (SELECT count(*)  FROM pkg_predictive WHERE id_campaign = $campaign->id AND operador IS NULL AND amd = 0) AS call_lost,
+            (SELECT count(*)  FROM pkg_predictive WHERE id_campaign = $campaign->id AND amd = 1) AS call_amd
             FROM `pkg_predictive_gen` WHERE `id_phonebook` IN ($id_campaign) AND ringing_time  = 0";
 
         return Yii::app()->db->createCommand($sql)->queryAll();

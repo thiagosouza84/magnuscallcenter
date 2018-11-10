@@ -27,6 +27,7 @@ class Predictive extends Model
     public function rules()
     {
         return array(
+            array('id_campaign,amd', 'numerical', 'integerOnly' => true),
             array('uniqueid', 'length', 'max' => 30),
             array('number,operador', 'length', 'max' => 20),
         );
