@@ -68,15 +68,17 @@ class OperatorStatusController extends BaseController
         $modelOperatorStatus = OperatorStatus::model()->find("id_user = " . Yii::app()->session['id_user']);
 
         if (count($modelOperatorStatus) > 0) {
-            if ($modelOperatorStatus->categorizing == 1) {
+
+            if ($modelOperatorStatus->idUser->force_logout == 1) {
+                $status                            = 'LOGOUT';
+                Yii::app()->session['id_campaign'] = null;
+                //User::model()->updateByPk(Yii::app()->session['id_user'], array('force_logout' => 0));
+            } else if ($modelOperatorStatus->categorizing == 1) {
                 $status = 'CATEGORIZING';
             } else if ($modelOperatorStatus->queue_paused == 1) {
                 $status = 'PAUSED';
             } else {
                 switch ($modelOperatorStatus->queue_status) {
-                    case 0:
-                        $status = 'UNKNOWN';
-                        break;
                     case 1:
                         $status = 'NOT_INUSE';
                         break;
@@ -108,7 +110,15 @@ class OperatorStatusController extends BaseController
             }
 
         } elseif (count($modelOperatorStatus) == 0) {
-            $status = 'NO CAMPAING';
+            $modelUser = User::model()->findByPk(Yii::app()->session['id_user']);
+            if ($modelUser->force_logout == 1) {
+                $status                            = 'LOGOUT';
+                Yii::app()->session['id_campaign'] = null;
+                User::model()->updateByPk(Yii::app()->session['id_user'], array('force_logout' => 0));
+            } else {
+                $status = 'NO CAMPAING';
+            }
+
         }
         //check if exist a mandaroyBreak
         Yii::import('application.controllers.BreaksController');
@@ -117,6 +127,71 @@ class OperatorStatusController extends BaseController
         $status = array('rows' => array('status' => $status[0]), 'break_madatory' => $status[1]);
 
         echo json_encode($status);
+    }
+
+    public function actionDestroy()
+    {
+        $values = $this->getAttributesRequest();
+
+        $resultOperatorStatus = OperatorStatus::model()->findByPk($values['id']);
+
+        $modelCampaign = Campaign::model()->findByPk($resultOperatorStatus->id_campaign);
+
+        $id_campaign = $modelCampaign->id;
+
+        $modelUser = User::model()->findByPk($resultOperatorStatus->id_user);
+        $username  = $modelUser->username;
+
+        if ($id_campaign > 0) {
+
+            AsteriskAccess::instance()->queueRemoveMember($username, $modelCampaign->name);
+
+            $modelPhonenumber = PhoneNumber::model()->findByPk($modelUser->id_current_phonenumber);
+            if (count($modelPhonenumber)) {
+                $modelPhonenumber->id_user = null;
+                $modelPhonenumber->save();
+            }
+
+            $modelUser->id_current_phonenumber = null;
+            $modelUser->id_campaign            = null;
+            $modelUser->force_logout           = 1;
+            $modelUser->save();
+
+            $modelLoginsCampaign = LoginsCampaign::model()->find(
+                "id_user = :id_user AND stoptime = :stoptime AND
+                    id_campaign = :id_campaign AND login_type = :login_type",
+                array(
+                    ":id_campaign" => $modelCampaign->id,
+                    ":id_user"     => $modelUser->id,
+                    ":stoptime"    => '0000-00-00 00:00:00',
+                    ":login_type"  => 'LOGIN',
+                ));
+            if (count($modelLoginsCampaign)) {
+                $modelLoginsCampaign->stoptime   = date('Y-m-d H:i:s');
+                $modelLoginsCampaign->total_time = strtotime(date('Y-m-d H:i:s')) - strtotime($modelLoginsCampaign->starttime);
+                try {
+                    $modelLoginsCampaign->save();
+                } catch (Exception $e) {
+                    Yii::log(print_r($modelLoginsCampaign->errors, true), 'info');
+                }
+            }
+
+            LoginsCampaign::model()->deleteAll('id_user = :key AND stoptime = :key1', array(
+                ':key'  => $modelUser->id,
+                ':key1' => '0000-00-00 00:00:00',
+            ));
+
+            OperatorStatus::model()->deleteAll("id_user = " . $modelUser->id);
+
+            $success = true;
+            $msn     = Yii::t('yii', 'Operation was successful.');
+        }
+
+        echo json_encode(array(
+            'success' => $success,
+            'msg'     => $msn,
+        ));
+        exit();
     }
 
 }

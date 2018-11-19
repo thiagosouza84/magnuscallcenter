@@ -322,6 +322,16 @@ class UpdateMysqlCommand extends ConsoleCommand
             $this->executeDB($sql);
         }
 
+        if ($version == '3.1.6') {
+
+            $sql = "ALTER TABLE `pkg_user` ADD `force_logout` INT(1) NOT NULL DEFAULT '0' AFTER `id_campaign`;";
+            $this->executeDB($sql);
+
+            $version = '3.1.7';
+            $sql     = "UPDATE pkg_configuration SET config_value = '" . $version . "' WHERE config_key = 'version' ";
+            $this->executeDB($sql);
+        }
+
     }
 
     private function executeDB($sql)

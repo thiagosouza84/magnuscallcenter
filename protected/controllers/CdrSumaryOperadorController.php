@@ -346,54 +346,51 @@ class CdrSumaryOperadorController extends BaseController
         $resultCampaign = $this->abstractModel->findByPk($values['id']);
         $id_campaign    = $resultCampaign->id_campaign;
 
-        $userResult = User::model()->findByPk($resultCampaign->id_user);
-        $username   = $userResult->username;
+        $modelCampaign = Campaign::model()->findByPk($id_campaign);
+
+        $modelUser = User::model()->findByPk($resultCampaign->id_user);
+        $username  = $modelUser->username;
 
         if ($id_campaign > 0) {
-            //select name the old campaign
-            $sql                = "SELECT name FROM pkg_campaign WHERE id = " . $id_campaign . "";
-            $resultNameCampaign = Yii::app()->db->createCommand($sql)->queryAll();
-            $campaignName       = preg_replace("/ /", "\ ", $resultNameCampaign[0]['name']);
-
-            $asmanager = new AGI_AsteriskManager;
-            $asmanager->connect('localhost', 'magnus', 'magnussolution');
-            $asmanager->Command("queue remove member SIP/" . $username . " to " . $campaignName);
-
-            $totalTime = " TIME_TO_SEC( TIMEDIFF(  '" . date('Y-m-d H:i:s') . "',  starttime ) ) ";
-
-            if ($userResult->training == 1) {
-
-                $sql = "DELETE FROM pkg_user_online WHERE id = " . $resultCampaign->id;
-                Yii::app()->db->createCommand($sql)->execute();
-
-                $sql          = "SELECT config_value FROM pkg_configuration WHERE config_key = 'valor_hora'";
-                $configResult = Yii::app()->db->createCommand($sql)->queryAll();
-                $valorSegundo = $configResult[0]['config_value'] / 3600;
-
-                $totalTimePause = strtotime(date('Y-m-d H:i:s')) - strtotime($resultCampaign->starttime);
-
-                $totalPricePause = number_format($totalTimePause * $valorSegundo, 2);
-
-                $sql = "INSERT INTO pkg_billing (id_user, id_campaign, `date`, total_price, total_time, turno) VALUES ( " . $resultCampaign->id_user . ", '-4', '" . date('Y-m-d') . "', '$totalPricePause', '$totalTimePause', '" . $resultCampaign->turno . "')";
-                Yii::app()->db->createCommand($sql)->execute();
-
-            } else {
-                $sql = "UPDATE pkg_user_online SET stoptime = '" . date('Y-m-d H:i:s') . "', total_time = $totalTime, pause = 2 WHERE id = " . $values['id'];
-                Yii::app()->db->createCommand($sql)->execute();
+            AsteriskAccess::instance()->queueRemoveMember($username, $modelCampaign->name);
+            $modelPhonenumber = PhoneNumber::model()->findByPk($modelUser->id_current_phonenumber);
+            if (count($modelPhonenumber)) {
+                $modelPhonenumber->id_user = null;
+                $modelPhonenumber->save();
             }
 
-            $sql = "UPDATE pkg_user SET id_campaign = -1 WHERE id = " . $resultCampaign->id_user;
-            Yii::app()->db->createCommand($sql)->execute();
+            $modelUser->id_current_phonenumber = null;
+            $modelUser->id_campaign            = null;
+            $modelUser->force_logout           = 1;
+            $modelUser->save();
 
-            /* $sql = "UPDATE pkg_logins_campaign SET stoptime = '".date('Y-m-d H:i:s')."', total_time = $totalTime WHERE id_user = ".$resultCampaign->id_user." AND stoptime = '0000-00-00 00:00:00'  AND id_campaign = ".$id_campaign;
-            Yii::app()->db->createCommand($sql)->execute();*/
+            $modelLoginsCampaign = LoginsCampaign::model()->find(
+                "id_user = :id_user AND stoptime = :stoptime AND
+                    id_campaign = :id_campaign AND login_type = :login_type",
+                array(
+                    ":id_campaign" => $modelCampaign->id,
+                    ":id_user"     => $modelUser->id,
+                    ":stoptime"    => '0000-00-00 00:00:00',
+                    ":login_type"  => 'LOGIN',
+                ));
+            if (count($modelLoginsCampaign)) {
+                $modelLoginsCampaign->stoptime   = date('Y-m-d H:i:s');
+                $modelLoginsCampaign->total_time = strtotime(date('Y-m-d H:i:s')) - strtotime($modelLoginsCampaign->starttime);
+                try {
+                    $modelLoginsCampaign->save();
+                } catch (Exception $e) {
+                    Yii::log(print_r($modelLoginsCampaign->errors, true), 'info');
+                }
+            }
 
-            $sql = "DELETE FROM pkg_call_online WHERE id_user = " . Yii::app()->session['id_user'];
-            Yii::app()->db->createCommand($sql)->execute();
+            LoginsCampaign::model()->deleteAll('id_user = :key AND stoptime = :key1', array(
+                ':key'  => $modelUser->id,
+                ':key1' => '0000-00-00 00:00:00',
+            ));
 
-            Yii::app()->session['id_campaign'] = '';
-            $success                           = true;
-            $msn                               = Yii::t('yii', 'Operation was successful.');
+            OperatorStatus::model()->deleteAll("id_user = " . $modelUser->id);
+            $success = true;
+            $msn     = Yii::t('yii', 'Operation was successful.');
         }
 
         echo json_encode(array(

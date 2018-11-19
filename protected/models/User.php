@@ -53,7 +53,7 @@ class User extends Model
     {
         return array(
             array('username, password', 'required'),
-            array('status, id_campaign, webphone, id_group, training,allow_direct_call_campaign', 'numerical', 'integerOnly' => true),
+            array('status, id_campaign, webphone, id_group, training,allow_direct_call_campaign, force_logout', 'numerical', 'integerOnly' => true),
             array('username, password, name, usuario_tns, cargo, fathername,mothername, hometown,birthday', 'length', 'max' => 50),
             array('direction', 'length', 'max' => 80),
             array('zipcode, state, company', 'length', 'max' => 20),

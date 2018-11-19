@@ -13,7 +13,7 @@ class CheckLoginCommand extends ConsoleCommand
         LoginsCampaign::model()->updateAll(array('stoptime' => 'starttime'), 'stoptime = :key AND type < :key',
             array(':key' => '0000-00-00 00:00:00', ':key1' => 'login'));
 
-        $modelCampaign = Campaign::model()->findAll(condition, array('key' => value))
+        $modelCampaign = Campaign::model()->findAll();
 
         foreach ($modelCampaign as $key => $campaign) {
             $server = AsteriskAccess::instance()->queueShow($campaign->name);
@@ -58,10 +58,23 @@ class CheckLoginCommand extends ConsoleCommand
                             'id = :key',
                             array(':key' => $modelLoginsCampaign->id));
 
-                        $modelUser->id_campaign = -1;
+                        $modelPhonenumber = PhoneNumber::model()->findByPk($modelUser->id_current_phonenumber);
+                        if (count($modelPhonenumber)) {
+                            $modelPhonenumber->id_user = null;
+                            $modelPhonenumber->save();
+                        }
+
+                        $modelUser->id_current_phonenumber = null;
+                        $modelUser->id_campaign            = null;
+                        $modelUser->force_logout           = 1;
                         $modelUser->save();
 
-                        CallOnline::model()->deleteAll('id_user = :key', array(':key' => $modelUser->id));
+                        LoginsCampaign::model()->deleteAll('id_user = :key AND stoptime = :key1', array(
+                            ':key'  => $modelUser->id,
+                            ':key1' => '0000-00-00 00:00:00',
+                        ));
+
+                        OperatorStatus::model()->deleteAll("id_user = " . $modelUser->id);
                     }
                 }
             }
