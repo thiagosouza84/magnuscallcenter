@@ -25,6 +25,7 @@ class Controller extends BaseController
         $allow = array(
             'site',
             'authentication',
+            'mBillingSoftphone',
         );
         return in_array($this->controllerName, $allow);
     }

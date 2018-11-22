@@ -275,7 +275,7 @@ class PredictiveCommand extends ConsoleCommand
                 $criteria->params[':key']  = $datebackcall;
                 $criteria->params[':key1'] = $modelCampaign[$i]->id;
                 $criteria->order           = 'datebackcall DESC';
-                $criteria->limit           = $nbpage;
+                $criteria->limit           = $nbpage * 3;
                 $modelPhoneNumber          = PhoneNumber::model()->findAll($criteria);
 
                 if (!count($modelPhoneNumber)) {
@@ -286,6 +286,10 @@ class PredictiveCommand extends ConsoleCommand
                 }
                 $ids = array();
                 foreach ($modelPhoneNumber as $phone) {
+
+                    if (count($ids) >= $nbpage) {
+                        break;
+                    }
                     MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . " \n\n\n");
 
                     for ($n = 1; $n < 4; $n++) {

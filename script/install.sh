@@ -394,6 +394,7 @@ allowsubscribe=yes
 subscribecontext=subscribe
 notifyringing=yes
 notifyhold=yes
+language=br
 
 #include sip_magnus_register.conf
 #include sip_magnus_user.conf

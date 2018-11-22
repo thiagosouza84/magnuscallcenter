@@ -15,11 +15,21 @@ class AuthenticationController extends BaseController
         $user     = $_REQUEST['user'];
         $password = $_REQUEST['password'];
 
-        $modelUser = User::model()->find("(username LIKE :user OR email LIKE :user) AND password LIKE :password",
-            array(
-                ':user'     => $user,
-                ':password' => $password,
-            ));
+        if (isset($_REQUEST['remote'])) {
+            $modelUser = User::model()->find("(username LIKE :user OR email LIKE :user) AND MD5(password) LIKE :password",
+                array(
+                    ':user'     => $user,
+                    ':password' => $password,
+                ));
+        } else {
+
+            $modelUser = User::model()->find("(username LIKE :user OR email LIKE :user) AND password LIKE :password",
+                array(
+                    ':user'     => $user,
+                    ':password' => $password,
+                ));
+        }
+
         Yii::app()->session['fieldsAllow']          = array();
         Yii::app()->session['labelExtraFields']     = array();
         Yii::app()->session['labelExtraFieldstype'] = array();
@@ -81,6 +91,10 @@ class AuthenticationController extends BaseController
         $modelUser->save();
 
         MagnusLog::insertLOG(1, 'Username Login on the panel - User ' . $modelUser->username);
+
+        if (isset($_REQUEST['remote'])) {
+            header("Location: ../..");
+        }
 
         $msg = isset($msg) ? $msg : '';
         echo json_encode(array(

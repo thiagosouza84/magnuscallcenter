@@ -20,6 +20,8 @@ class TimeToCategorizeCommand extends ConsoleCommand
 
                     if ($time_to_call > $args[0]) {
 
+                        Cdr::model()->updateAll(array('id_category' => 11), 'sessiontime > 0 AND id_category IS NULL');
+
                         $modeUser->id_current_phonenumber = null;
                         $modeUser->save();
 
@@ -34,9 +36,7 @@ class TimeToCategorizeCommand extends ConsoleCommand
                         OperatorStatusManager::unPause($operatorStatus->id_user, $modelCampaign, 1, $modeUser->username);
                     }
                 }
-
             }
-
             sleep(3);
         }
     }
