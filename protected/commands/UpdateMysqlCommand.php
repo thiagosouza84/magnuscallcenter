@@ -331,6 +331,15 @@ class UpdateMysqlCommand extends ConsoleCommand
             $sql     = "UPDATE pkg_configuration SET config_value = '" . $version . "' WHERE config_key = 'version' ";
             $this->executeDB($sql);
         }
+        if ($version == '3.1.7') {
+
+            $sql = "UPDATE `pkg_configuration` SET `status` = 1 WHERE config_key = 'amd'";
+            $this->executeDB($sql);
+
+            $version = '3.1.8';
+            $sql     = "UPDATE pkg_configuration SET config_value = '" . $version . "' WHERE config_key = 'version' ";
+            $this->executeDB($sql);
+        }
 
     }
 

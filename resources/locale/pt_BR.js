@@ -1,4 +1,5 @@
 Locale.load({
+    'Use to success': 'Usar como efetiva',
     'Call lost': 'Perdidas',
     'Mañana': 'Manha',
     'Massive Call Report': 'Relatório Torpedo',

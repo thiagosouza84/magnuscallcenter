@@ -31,4 +31,21 @@ class CategoryController extends BaseController
         return $filter;
     }
 
+    public function beforeSave($values)
+    {
+        if (isset($values['use_in_efetiva']) && $values['use_in_efetiva'] == 1) {
+            $modelCaterogy = $this->abstractModel->find('use_in_efetiva = 1');
+            if (count($modelCaterogy) > 0) {
+                echo json_encode(array(
+                    $this->nameSuccess => false,
+                    $this->nameRoot    => array(),
+                    'errors'           => 'You already have category to success call',
+                ));
+                exit;
+            }
+        }
+
+        return $values;
+    }
+
 }

@@ -40,18 +40,10 @@ class Category extends Model
     {
         return array(
             array('name', 'required'),
-            array('status,', 'numerical', 'integerOnly' => true),
+            array('status,use_in_efetiva', 'numerical', 'integerOnly' => true),
             array('description', 'length', 'max' => 100),
             array('type,color', 'length', 'max' => 15),
         );
     }
 
-    public function beforeSave()
-    {
-        if (strlen($this->type) > 0) {
-            unset($this->status);
-            unset($this->type);
-        }
-        return parent::beforeSave();
-    }
 }
