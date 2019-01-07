@@ -219,7 +219,7 @@ systemctl restart  httpd
 
 
 cd /usr/src
-wget http://magnussolution.com/mpg123-1.20.1.tar.bz2
+wget http://magnussolution.com/download/mpg123-1.20.1.tar.bz2
 tar -xjvf mpg123-1.20.1.tar.bz2
 cd mpg123-1.20.1
 ./configure && make && make install
@@ -590,7 +590,6 @@ hwclock --systohc
 
 php /var/www/html/callcenter/cron.php updatemysql
 
-chown asterisk:asterisk /var/lib/asterisk/agi-bin/magnus
 chmod +x /var/www/html/callcenter/resources/asterisk/magnus.php
 chown -R asterisk:asterisk /var/spool/asterisk/monitor
 chmod -R 750 /var/spool/asterisk/monitor
