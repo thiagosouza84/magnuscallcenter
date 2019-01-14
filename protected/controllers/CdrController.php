@@ -24,7 +24,7 @@ class CdrController extends BaseController
         'idPhonebook'                           => 'name',
         'idCategory'                            => 'name',
     );
-    public $join = 'JOIN pkg_user ON pkg_user.id = t.id_user
+    public $join = 'LEFT JOIN pkg_user ON pkg_user.id = t.id_user
                             JOIN pkg_campaign ON pkg_campaign.id = t.id_campaign
                             JOIN pkg_category ON t.id_category = pkg_category.id';
 

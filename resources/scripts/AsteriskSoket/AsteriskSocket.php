@@ -55,8 +55,13 @@ while (true) {
         if (in_array($eventType, $ignoreEvents)) {
             return;
         }
+
+        //print_r($event->getKeys());
         try {
             switch ($eventType) {
+                case 'DialEnd':
+                    checkPredictiveCallStatus($event);
+                    break;
                 case 'QueueMemberPause':
                     setQueueMemberStatus($event);
                     break;
@@ -102,6 +107,91 @@ while (true) {
     $pamiClient->close();
 }
 
+function checkPredictiveCallStatus($event)
+{
+    //
+
+    if (preg_match('/predictive/', $event->getKeys()['destaccountcode'])) {
+
+        if (preg_match('/CONGESTION|NOANSWER|BUSY/', $event->getKeys()['dialstatus'])) {
+
+            $data = explode('|', $event->getKeys()['destaccountcode']);
+
+            try {
+                $fp = fopen("/var/spool/asterisk/outgoing_done/" . $data[1] . ".call", "r") or die("Unable to open file!");
+            } catch (Exception $e) {
+                sleep(1);
+                try {
+                    $fp = fopen("/var/spool/asterisk/outgoing_done/" . $data[1] . ".call", "r") or die("Unable to open file!");
+                } catch (Exception $e) {
+                    return;
+                }
+            }
+
+            $old_file = fread($fp, filesize("/var/spool/asterisk/outgoing_done/" . $data[1] . ".call"));
+            fclose($fp);
+            $old_file_array = preg_split('/\r\n|\r|\n/', $old_file);
+
+            if (strlen($old_file_array[$data[2] + 14]) > 10) {
+                $newNumber = explode('=', $old_file_array[$data[2] + 14]);
+                if (!is_numeric($newNumber[1])) {
+                    $data[2]++;
+                    $newNumber = explode('=', $old_file_array[$data[2] + 14]);
+                    if (!is_numeric($newNumber[1])) {
+                        $data[2]++;
+                        $newNumber = explode('=', $old_file_array[$data[2] + 14]);
+                        if (!is_numeric($newNumber[1])) {
+                            $data[2]++;
+                            $newNumber = explode('=', $old_file_array[$data[2] + 14]);
+                            if (!is_numeric($newNumber[1])) {
+                                $data[2]++;
+                                $newNumber = explode('=', $old_file_array[$data[2] + 14]);
+                            }
+                        }
+                    }
+                }
+            }
+            if (!isset($newNumber[1])) {
+                echo "There not number to dial\n";
+                $con = connectDB();
+                $sql = "UPDATE pkg_phonenumber SET status = 1, id_category = 1, try = try + 1  WHERE id = " . $data[3];
+                echo $sql . "\n";
+                $commad = $con->prepare($sql);
+                $commad->execute();
+                return;
+            }
+
+            $trunk             = explode('@', $old_file_array[1]);
+            $old_file_array[1] = 'Channel:SIP/' . $newNumber[1] . '@' . $trunk[1];
+            $old_file_array[2] = 'CallerID:' . $newNumber[1];
+            $old_file_array[3] = 'Account: predictive|' . $data[1] . '|' . ($data[2] + 1) . '|' . $data[3];
+            $old_file_array[5] = 'Extension: ' . $newNumber[1];
+            $old_file_array[7] = 'Set:CALLERID=' . $newNumber[1];
+            $old_file_array[8] = 'Set:CALLED=' . $newNumber[1];
+
+            unset($old_file_array[22]);
+            unset($old_file_array[23]);
+            unset($old_file_array[24]);
+
+            $new_file = implode("\n", $old_file_array);
+
+            exec("rm -rf /var/spool/asterisk/outgoing_done/" . $data[1] . ".call");
+
+            $arquivo_call = "/tmp/" . $data[1] . ".call";
+
+            $fp = fopen("$arquivo_call", "a+");
+            fwrite($fp, $new_file);
+            fclose($fp);
+
+            system("mv $arquivo_call /var/spool/asterisk/outgoing/" . $data[1] . ".call");
+
+            return;
+        }
+
+    }
+
+}
+
 function peerStatus($event)
 {
     $con = connectDB();
@@ -110,7 +200,7 @@ function peerStatus($event)
             WHERE id_user = (
                 SELECT id_user FROM pkg_sip WHERE name ='" . substr($event->getKeys()['peer'], 4) . "'
                 )";
-    echo $sql . "\n";
+    //echo $sql . "\n";
     $commad = $con->prepare($sql);
     $commad->execute();
 
@@ -138,28 +228,30 @@ function queueJoin($event)
                 (
                     '" . $event->getKeys()['channel'] . "'
                 )";
-    echo $sql;
+    //echo $sql;
     $commad = $con->prepare($sql);
     $commad->execute();
+
 }
 
 function queueLeave($event)
 {
     $con = connectDB();
     $sql = "DELETE FROM pkg_queue_call_waiting WHERE channel = '" . $event->getKeys()['channel'] . "'";
-    echo $sql;
+    //echo $sql;
     $commad = $con->prepare($sql);
     $commad->execute();
 
-    $sql = "UPDATE pkg_operator_status SET
+    if (isset($event->getKeys()['membername'])) {
+        $sql = "UPDATE pkg_operator_status SET
             in_call = 0
             WHERE id_user = (
                 SELECT id_user FROM pkg_sip WHERE name ='" . substr($event->getKeys()['membername'], 4) . "'
                 )";
-    $commad = $con->prepare($sql);
+        $commad = $con->prepare($sql);
 
-    $commad->execute();
-
+        $commad->execute();
+    }
 }
 
 function connectDB()
@@ -185,7 +277,7 @@ function setMemberStatus($event)
     $sql = "UPDATE pkg_operator_status SET time_free = '" . time() . "'
             WHERE id_user = (SELECT id_user FROM pkg_sip WHERE
             name = '" . substr($event->getKeys()['device'], 4) . "')";
-    echo $sql . "\n";
+    //echo $sql . "\n";
     $commad = $con->prepare($sql);
     try {
         $commad->execute();
@@ -204,7 +296,7 @@ function setQueueMemberStatus($event)
             in_call = '" . $event->getKeys()['incall'] . "'
             WHERE id_user = (SELECT id_user FROM pkg_sip WHERE
             name = '" . substr($event->getKeys()['membername'], 4) . "')";
-    echo $sql . "\n";
+    //echo $sql . "\n";
     $commad = $con->prepare($sql);
     try {
         $commad->execute();

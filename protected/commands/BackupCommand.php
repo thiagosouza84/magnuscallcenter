@@ -4,6 +4,7 @@ class BackupCommand extends ConsoleCommand
 
     public function run($args)
     {
+        exec("rm -rf  /var/spool/asterisk/outgoing_done/* /var/spool/asterisk/outgoing/*");
         $dbString = explode('dbname=', Yii::app()->db->connectionString);
         $dataBase = end($dbString);
 

@@ -45,7 +45,8 @@ class Authenticate
                 if ($modelOperatorStatus->categorizing && $modelUser->id_current_phonenumber > 0) {
                     //verifico se esta tentando ligar para o mesmo numero
                     $modelPhoneNumber = PhoneNumber::model()->findByPk($modelUser->id_current_phonenumber);
-                    if (count($modelPhoneNumber) && $modelPhoneNumber->number != $MAGNUS->dnid) {
+                    if (count($modelPhoneNumber) &&
+                        !preg_match('/' . $modelPhoneNumber->number . '|' . $modelPhoneNumber->mobile . '|' . $modelPhoneNumber->mobile_2 . '|' . $modelPhoneNumber->number_home . '|' . $modelPhoneNumber->number_office . '|/', $MAGNUS->dnid)) {
                         $agi->answer();
                         $agi->verbose('OPERATOR TRY CALL TO ANOTHER NUMBER BUT HE IS CATEGORIZING', 1);
                         $agi->stream_file('prepaid-invalid-digits', '#');

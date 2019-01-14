@@ -6,21 +6,7 @@ class PredictiveCommand extends ConsoleCommand
     public function run($args)
     {
 
-        $this->debug = 10;
-
-        //$channel = AsteriskAccess::getCoreShowChannel($_POST['channel']);
-        /*
-        Objetivo:
-        menor tempo possivel de operadora ocioso.
-        sem queimar numero
-
-        Pegar as campanhas com predictive ativo
-        Verificar quantos operadores tem na campanha com o status FREE
-        Pegar a quantidade de numeros a ser enviado por operadora
-        buscar os números de cada uma das campanha com o total de numeros no LIMIT
-        executar las llamadas
-
-         */
+        $this->debug = 0;
 
         //Tempo de pausa entre cada campanha
         $pause      = 4;
@@ -271,7 +257,7 @@ class PredictiveCommand extends ConsoleCommand
                 $datebackcall = date('Y-m-d H:i', mktime(date('H'), date('i') - 10, date('s'), date('m'), date('d'), date('Y')));
 
                 $criteria = new CDbCriteria();
-                $criteria->addCondition('(number > 0 OR number_home > 0 OR number_office > 0 OR mobile > 0) AND try < 4 AND id_phonebook IN ( SELECT id_phonebook FROM pkg_campaign_phonebook WHERE id_campaign = :key1 ) AND id_category = 1 OR ( id_category = 2 AND datebackcall BETWEEN :key AND NOW())');
+                $criteria->addCondition('(number > 0 OR number_home > 0 OR number_office > 0 OR mobile > 0) AND id_phonebook IN ( SELECT id_phonebook FROM pkg_campaign_phonebook WHERE id_campaign = :key1 ) AND id_category = 1 OR ( id_category = 2 AND datebackcall BETWEEN :key AND NOW())');
                 $criteria->params[':key']  = $datebackcall;
                 $criteria->params[':key1'] = $modelCampaign[$i]->id;
                 $criteria->order           = 'datebackcall DESC';
@@ -285,58 +271,32 @@ class PredictiveCommand extends ConsoleCommand
                     continue;
                 }
                 $ids = array();
+
                 foreach ($modelPhoneNumber as $phone) {
+
+                    echo 'PhoneID=' . $phone->id . "\n\n";
 
                     if (count($ids) >= $nbpage) {
                         break;
                     }
+
                     MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . " \n\n\n");
 
-                    for ($n = 1; $n < 4; $n++) {
+                    $destination = $phone->number;
 
-                        $types = array(
-                            '0' => 'number',
-                            '1' => 'number_home',
-                            '2' => 'number_office',
-                            '3' => 'mobile',
-                        );
+                    $log = $this->debug >= 1 ? MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . " ID=" . $phone->id . ' - Destination' . $destination) : null;
 
-                        if ($phone->try > 3) {
-                            MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . " Nao tem mais numeros para ligar PHONE_ID" . $phone->id . ' ' . $destination . "\n\n");
-                            $phone->status = 0;
-                            $phone->save();
-                            break;
-                        }
-                        $destination = $phone->{$types[$phone->try]};
-
-                        $log = $this->debug >= 1 ? MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . " ID=" . $phone->id . ' - Destination' . $destination) : null;
-
-                        if (!is_numeric($destination) || strlen($destination) < 8) {
-                            $destination = $phone->{$types[$n]};
-                            $log         = $this->debug >= 1 ? MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . " " . $destination . ' ' . $phone->id . ", tentando ligar para outro numero ->  " . $types[$n] . " " . $phone->{$types[$phone->try]}) : null;
-                            continue;
-                        } else {
-                            MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . " NUMEOR ENCONTRADO PHONE_ID" . $phone->id . ' ' . $destination . "\n\n");
-                            break;
-                        }
-                        $log           = $this->debug >= 1 ? MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . " DISABLE PHONE_ID" . $phone->id) : null;
-                        $phone->status = 0;
-                        $phone->save();
-
-                    }
-
-                    if (strlen($destination) < 5) {
+                    if (!is_numeric($destination) || strlen($destination) < 8) {
+                        $destination = $phone->{$types[$n]};
+                        $log         = $this->debug >= 1 ? MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . " " . $destination . ' ' . $phone->id . ", tentando ligar para outro numero ->  " . $types[$n] . " " . $phone->{$types[$phone->try]}) : null;
                         continue;
                     }
 
-                    if ($types[$phone['try']] != 'number') {
-
-                        $log = $this->debug >= 1 ? MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . " " . $phone->id . ", tentando ligar para outro numero") : null;
-                    }
+                    $phone->status = 0;
+                    $phone->save();
 
                     $destination = Portabilidade::getDestination($destination, $phone->id_phonebook);
                     if ($phone->number != $destination) {
-                        //55341 5551982464731
                         $rn1      = substr($phonenumber, 0, 5);
                         $criteria = new CDbCriteria();
                         $criteria->addCondition('id IN ( SELECT id_trunk FROM pkg_codigos_trunks WHERE id_codigo IN (SELECT id FROM pkg_codigos WHERE company = (SELECT company FROM pkg_codigos WHERE prefix = :key)) )');
@@ -352,9 +312,33 @@ class PredictiveCommand extends ConsoleCommand
                         }
                     }
 
-                    $log = $this->debug >= 4 ? MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . " DESTINATION " . $destination) : null;
+                    $log        = $this->debug >= 4 ? MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . " DESTINATION " . $destination) : null;
+                    $modelTrunk = Trunk::model()->findByPk((int) $phone->idPhonebook->id_trunk);
 
-                    $modelTrunk   = Trunk::model()->findByPk((int) $phone->idPhonebook->id_trunk);
+                    if ($phone->try > 2) {
+                        $log = $this->debug >= 4 ? MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . "Number already try dial per 3 trunk. Disable number \n\n") : null;
+                        PhoneNumber::model()->updateByPk($phone->id, array('status' => 0, 'id_category' => 0, 'try' => 0));
+                        continue;
+                    } else if ($phone->try > 0) {
+                        $modelTrunk = Trunk::model()->findByPk((int) $modelTrunk->failover_trunk);
+                        if (!isset($modelTrunk->id)) {
+                            $log = $this->debug >= 4 ? MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . "NOT EXIST TRUNCK BACKUP $modelTrunk->failover_trunk \n\n") : null;
+                            PhoneNumber::model()->updateByPk($phone->id, array('status' => 0, 'id_category' => 0, 'try' => 0));
+                            continue;
+                        }
+
+                        if ($phone->try == 2) {
+                            $modelTrunk = Trunk::model()->findByPk((int) $modelTrunk->failover_trunk);
+                        }
+
+                        if (!isset($modelTrunk->id)) {
+                            $log = $this->debug >= 4 ? MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . "NOT EXIST TRUNCK BACKUP $modelTrunk->failover_trunk \n\n") : null;
+                            PhoneNumber::model()->updateByPk($phone->id, array('status' => 0, 'id_category' => 0, 'try' => 0));
+                            continue;
+                        }
+                        echo 'Trunk backup found Try per trunk  ' . $modelTrunk->trunkcode . "\n\n";
+                    }
+
                     $idTrunk      = $modelTrunk->id;
                     $trunkcode    = $modelTrunk->trunkcode;
                     $trunkprefix  = $modelTrunk->trunkprefix;
@@ -369,20 +353,21 @@ class PredictiveCommand extends ConsoleCommand
 
                     $destination = $trunkprefix . $destination;
 
-                    $extension = $destination;
-
-                    $dialstr = "$providertech/$trunkcode/$destination";
-                    //$dialstr = "$providertech/$trunkcode/45".rand(1,2).rand(0,9);
-
                     $aleatorio = str_replace(" ", "", microtime(true));
 
+                    $extension = $destination;
+
+                    $dialstr = "$providertech/$destination@$trunkcode";
+
                     // gerar os arquivos .call
-                    $call = "Channel: " . $dialstr . "\n";
+                    $call = "MaxRetries: 0\n";
+                    $call .= "Channel: " . $dialstr . "\n";
                     $call .= "CallerID:" . $phone->number . "\n";
-                    $call .= "MaxRetries: 0\n";
-                    $call .= "RetryTime: 1\n";
-                    $call .= "WaitTime: 45\n";
-                    $call .= "Context: magnuscallcenterpredictive\n";
+                    //$call .= "MaxRetries: 0\n";
+                    //$call .= "RetryTime: 1\n";
+                    //$call .= "WaitTime: 45\n";
+                    $call .= "Account: predictive|" . $aleatorio . "|1|" . $phone->id . "\n";
+                    $call .= "Context: magnuscallcenter\n";
                     $call .= "Extension: " . $extension . "\n";
                     $call .= "Priority: 1\n";
                     $call .= "Set:CALLERID=" . $phone->number . "\n";
@@ -393,8 +378,14 @@ class PredictiveCommand extends ConsoleCommand
                     $call .= "Set:IDTRUNK=" . $phone->idPhonebook->id_trunk . "\n";
                     $call .= "Set:STARTCALL=" . time() . "\n";
                     $call .= "Set:ALEARORIO=" . $aleatorio . "\n";
+                    $call .= "Set:NUMBER1=" . $phone->mobile . "\n";
+                    $call .= "Set:NUMBER2=" . $phone->mobile_2 . "\n";
+                    $call .= "Set:NUMBER3=" . $phone->number_home . "\n";
+                    $call .= "Set:NUMBER4=" . $phone->number_office . "\n";
                     $call .= "Set:AMD=" . $this->config['agi-conf1']['amd'] . "\n";
+                    $call .= "Archive: yes\n";
 
+                    echo $call;
                     $log = $this->debug >= 4 ? MagnusLog::writeLog(LOGFILE, ' line:' . __LINE__ . $call) : null;
 
                     $msg = "Enviado chamada para  $extension";
@@ -407,13 +398,12 @@ class PredictiveCommand extends ConsoleCommand
                     fwrite($fp, $call);
                     fclose($fp);
 
-                    $time += time();
+                    //$time += time();
                     touch("$arquivo_call", $time);
                     chown("$arquivo_call", "asterisk");
                     chgrp("$arquivo_call", "asterisk");
                     chmod("$arquivo_call", 0755);
                     LinuxAccess::system("mv $arquivo_call /var/spool/asterisk/outgoing/$aleatorio.call");
-
                     $ids[] = $phone->id;
                 }
 
@@ -423,7 +413,6 @@ class PredictiveCommand extends ConsoleCommand
                 PhoneNumber::model()->updateAll(
                     array(
                         'id_category' => 0,
-                        'try'         => new CDbExpression('try + 1'),
                     ),
                     $criteria);
 

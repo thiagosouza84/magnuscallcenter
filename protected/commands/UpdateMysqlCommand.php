@@ -341,6 +341,16 @@ class UpdateMysqlCommand extends ConsoleCommand
             $this->executeDB($sql);
         }
 
+        if ($version == '3.1.9') {
+
+            $sql = "INSERT INTO `callcenter`.`pkg_category` (`id`, `name`, `description`, `status`, `use_in_efetiva`, `color`, `type`) VALUES ('-3', 'LEAVE QUEUE', NULL, '0', '0', '#ffffff', '1');";
+            $this->executeDB($sql);
+
+            $version = '3.2.0';
+            $sql     = "UPDATE pkg_configuration SET config_value = '" . $version . "' WHERE config_key = 'version' ";
+            $this->executeDB($sql);
+        }
+
     }
 
     private function executeDB($sql)

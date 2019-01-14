@@ -101,13 +101,16 @@ class PredictiveAgi
             $modelUser = User::model()->find('username = (SELECT operador FROM pkg_predictive WHERE uniqueid = :key)',
                 array(':key' => $MAGNUS->uniqueid));
 
+            if (!isset($modelUser->id)) {
+                // phonenumber loave the queue without answered, active to call again
+                PhoneNumber::model()->updateByPk($agi->get_variable("PHONENUMBER_ID", true), array('id_category' => 1, 'status' => 1));
+                $MAGNUS->forceIdCaterory = '-3';
+            }
         }
 
         $endTime = time();
 
         $Calc->answeredtime = $Calc->real_answeredtime = $endTime - $startTime;
-
-        $agi->verbose('id_user ' . $modelUser->id, 25);
 
         $MAGNUS->id_user = $modelUser->id;
 

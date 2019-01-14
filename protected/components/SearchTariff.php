@@ -34,7 +34,15 @@ class SearchTariff
             INNER JOIN pkg_campaign_phonebook ON pkg_campaign_phonebook.id_phonebook = pkg_phonebook.id
             INNER JOIN pkg_campaign ON pkg_campaign_phonebook.id_campaign = pkg_campaign.id
             INNER JOIN pkg_trunk ON pkg_phonebook.id_trunk = pkg_trunk.id
-            WHERE  pkg_campaign.id IN ($id_campaign) AND t.number = SUBSTRING('$phonenumber',1,length(t.number)) ORDER BY LENGTH(t.number) DESC";
+            WHERE  pkg_campaign.id IN ($id_campaign)
+            AND
+            (
+                t.number = SUBSTRING('$phonenumber',1,length(t.number)) OR
+                t.mobile = '$phonenumber'  OR
+                t.mobile_2 = '$phonenumber'  OR
+                t.number_home = '$phonenumber'  OR
+                t.number_office = '$phonenumber'
+            ) ORDER BY LENGTH(t.number) DESC";
 
         $agi->verbose($sql, 25);
 

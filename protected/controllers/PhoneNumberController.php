@@ -290,7 +290,17 @@ class PhoneNumberController extends BaseController
     public function actionSample()
     {
         if (!Yii::app()->getSession()->get('isAdmin')) {
-            $destination = json_decode($_POST['row'], true);
+
+            $modelPhonenumber = PhoneNumber::model()->findByPk((int) $_POST['id']);
+            $destination      = $modelPhonenumber->{$_POST['field']};
+
+            if (strlen($destination) < 1) {
+                echo json_encode(array(
+                    $this->nameSuccess => false,
+                    $this->nameMsg     => 'Number not found',
+                ));
+                exit;
+            }
 
             $dialstr = 'SIP/' . Yii::app()->getSession()->get('username');
 
@@ -306,7 +316,7 @@ class PhoneNumberController extends BaseController
             $call .= "Priority: 1\n";
             $call .= "Set:CALLED=" . $destination . "\n";
             $call .= "Set:accountcode=" . Yii::app()->getSession()->get('username') . "\n";
-            $call .= "Set:PHONENUMBER_ID=" . $_GET['id'] . "\n";
+            $call .= "Set:PHONENUMBER_ID=" . $modelPhonenumber->id . "\n";
 
             $aleatorio    = str_replace(" ", "", microtime(true));
             $arquivo_call = "/var/spool/asterisk/outgoing/$aleatorio.call";
@@ -318,7 +328,6 @@ class PhoneNumberController extends BaseController
             chown("$arquivo_call", "asterisk");
             chgrp("$arquivo_call", "asterisk");
             chmod("$arquivo_call", 0777);
-            //shell_exec("mv $arquivo_call /var/spool/asterisk/outgoing/$aleatorio.call");
 
             echo json_encode(array(
                 $this->nameSuccess => true,
